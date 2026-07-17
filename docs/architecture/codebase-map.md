@@ -35,6 +35,7 @@ apps/blind-flange-calculator/index.html
 | `src/allowables.ts` | Allowable stress from yield/γ; hydrotest pressure helpers (EN / ASME style) |
 | `src/gasket.ts` | Standard and custom gasket effective diameter/width heuristics |
 | `src/bolting.ts` | Bolt stress area / hole / pitch tables; Wm1/Wm2 loads; area checks; torque (K-factor) |
+| `src/platePhysics.ts` | Shared circular-plate deflection/stress/thickness helpers (standard/custom/manual) |
 | `src/utils.ts` | Standard-mode `calculateBlindFlange`, PN selection, EN 1092 lookup, thickness/weight orchestration |
 | `src/custom.ts` | Custom auto-sizing search over bolt counts × sizes; failure diagnostics |
 | `src/manualCheck.ts` | Geometry validation and thickness/stress/deflection checks for user-defined dims |

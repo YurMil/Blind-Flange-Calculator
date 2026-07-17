@@ -37,9 +37,10 @@ Responsibilities:
 3. Install Node.js.
 4. Install dependencies with a frozen lockfile.
 5. Run TypeScript checks.
-6. Build the utility app.
-7. Validate the generated static artifact.
-8. Upload the deployable app as a GitHub Actions artifact.
+6. Run unit tests (`pnpm test:blind-flange`).
+7. Build the utility app.
+8. Validate the generated static artifact.
+9. Upload the deployable app as a GitHub Actions artifact.
 
 ## Static Artifact Validation
 

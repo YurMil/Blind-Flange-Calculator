@@ -9,7 +9,9 @@
     "dev:blind-flange": "corepack pnpm --dir apps/blind-flange-calculator dev",
     "build:blind-flange": "corepack pnpm --dir apps/blind-flange-calculator build",
     "typecheck:blind-flange": "corepack pnpm --dir apps/blind-flange-calculator typecheck",
+    "test:blind-flange": "corepack pnpm --dir apps/blind-flange-calculator test",
     "build": "pnpm build:blind-flange",
-    "typecheck": "pnpm typecheck:blind-flange"
+    "typecheck": "pnpm typecheck:blind-flange",
+    "test": "pnpm test:blind-flange"
   }
 }

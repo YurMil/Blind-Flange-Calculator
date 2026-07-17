@@ -19,25 +19,19 @@ Priority is relative engineering risk, not a delivery commitment.
 | Field | Value |
 | --- | --- |
 | Priority | High |
-| Status | Open |
+| Status | Resolved |
 | Area | Domain |
+| Resolved in | shared `apps/blind-flange-calculator/src/platePhysics.ts`; covered by unit tests |
 
-**Symptom.** Circular-plate helpers (`calcPlateDeflection`, `calcPlateStress`, `calcThickForStress`, `calcThickForDeflection`) exist in nearly identical form in:
+**Symptom.** Circular-plate helpers (`calcPlateDeflection`, `calcPlateStress`, `calcThickForStress`, `calcThickForDeflection`) existed in nearly identical form in:
 
 - `apps/blind-flange-calculator/src/utils.ts`
 - `apps/blind-flange-calculator/src/custom.ts`
 - `apps/blind-flange-calculator/src/manualCheck.ts`
 
-**Why it matters.** A model change (Poisson ratio, deflection limit, plate theory) can update one path and silently leave standard / custom / manual modes inconsistent.
+**Resolution.** Helpers now live in `platePhysics.ts` and are imported by all three calculation paths. Unit fixtures live in `src/__tests__/platePhysics.test.ts`.
 
-**Follow-up.**
-
-1. Extract a single `domain/calculations/platePhysics.ts` module.
-2. Add unit fixtures covering deflection and thickness for shared helpers.
-3. Delete local copies after call-site migration.
-
-**Related.** [Mathematical Model](../development/mathematical-model.md), roadmap item “Domain Layer Consolidation”.
-
+**Follow-up (optional).** Move `platePhysics.ts` under `src/domain/calculations/` when B-10 lands.
 ---
 
 ## B-02 — Oversized application container state
@@ -85,22 +79,25 @@ Priority is relative engineering risk, not a delivery commitment.
 | Field | Value |
 | --- | --- |
 | Priority | High |
-| Status | Open |
+| Status | Mitigated |
 | Area | Quality |
+| Resolved in | Vitest unit suite + CI `pnpm test:blind-flange` gate |
 
-**Symptom.** CI runs TypeScript check + production build + artifact shape validation only. No Vitest/Jest/Playwright config or `*.test.ts` files are present despite documentation recommending them.
+**Symptom.** CI previously ran TypeScript check + production build + artifact shape validation only.
 
-**Why it matters.** Formula regressions and geometry edge cases can ship undetected. Refactors of B-01/B-02 become risky without fixtures.
+**Resolution.**
 
-**Follow-up.**
+- Vitest configured via `apps/blind-flange-calculator/vitest.config.ts`
+- Domain unit tests: plate physics, allowables, PN/bolting/standard calc, CAD validation
+- Root script `pnpm test:blind-flange` / `pnpm test`
+- CI quality job runs unit tests before build
 
-1. Add Vitest for domain modules (`utils`, `custom`, `manualCheck`, `bolting`, `allowables`, CAD validation).
-2. Add component tests for critical form/result interactions.
-3. Add Playwright smoke for load → calculate → export happy path.
-4. Gate CI on unit tests before deploy.
+**Still open (deferred).**
 
-**Related.** [Testing and Quality](../development/testing-and-quality.md).
+- Component tests (`@testing-library/react`)
+- Playwright browser smoke (load → calculate → export)
 
+See [Testing and Quality](../development/testing-and-quality.md).
 ---
 
 ## B-05 — CAD worker lacks timeout / cancel hardening
@@ -149,17 +146,19 @@ Priority is relative engineering risk, not a delivery commitment.
 | Field | Value |
 | --- | --- |
 | Priority | Medium |
-| Status | Mitigated (lockfile + CI frozen install) |
+| Status | Resolved |
 | Area | Tooling |
+| Resolved in | pinned versions in `package.json` + Dependabot |
 
-**Symptom.** `apps/blind-flange-calculator/package.json` pins dependencies to `"latest"`. Reproducibility depends on committed `pnpm-lock.yaml` and disciplined `--frozen-lockfile` usage.
+**Symptom.** Dependencies were declared as `"latest"`.
 
-**Follow-up.**
+**Resolution.**
 
-1. Pin explicit semver ranges (or exact versions) in `package.json`.
-2. Add Dependabot/Renovate.
-3. Document upgrade policy in development workflow.
+- Exact versions pinned in `apps/blind-flange-calculator/package.json`
+- `.github/dependabot.yml` for weekly npm and monthly Actions updates
+- CI continues to use `--frozen-lockfile`
 
+**Follow-up.** Keep Dependabot PRs reviewed; document any deliberate major upgrades in the changelog when one exists.
 ---
 
 ## B-08 — Configuration schema has no migration path
@@ -238,14 +237,14 @@ Priority is relative engineering risk, not a delivery commitment.
 
 ## Suggested Work Order
 
-When capacity is limited, tackle bottlenecks in this order:
+When capacity is limited, tackle remaining bottlenecks in this order:
 
-1. **B-04** tests for existing formulas (enables safe change)
-2. **B-01** shared plate physics (removes silent drift)
+1. ~~**B-04** tests for existing formulas~~ (Mitigated — unit + CI done; component/Playwright deferred)
+2. ~~**B-01** shared plate physics~~ (Resolved)
 3. **B-02** state boundary (reduces UI coupling)
 4. **B-03** shared PDF export module
 5. **B-05 / B-06** CAD hardening and facing features
-6. **B-07 / B-08 / B-09** packaging, schema, standards provenance
+6. ~~**B-07**~~ (Resolved) / **B-08 / B-09** schema + standards provenance
 7. **B-10 / B-11** structure and CI hygiene
 
 Update this file when an item is mitigated or resolved. Cross-link resolved items from [Future Development Roadmap](../development/future-development-roadmap.md).

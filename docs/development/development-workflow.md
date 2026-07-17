@@ -29,6 +29,12 @@ Run TypeScript checks:
 corepack pnpm typecheck:blind-flange
 ```
 
+Run unit tests:
+
+```bash
+corepack pnpm test:blind-flange
+```
+
 Build the deployable static app:
 
 ```bash
@@ -39,8 +45,13 @@ Run root aliases:
 
 ```bash
 corepack pnpm typecheck
+corepack pnpm test
 corepack pnpm build
 ```
+
+## Dependency Versions
+
+Pin exact versions in `apps/blind-flange-calculator/package.json`. Do not use `"latest"`. Dependabot (`.github/dependabot.yml`) opens weekly npm update PRs; review lockfile changes carefully and keep CI on `--frozen-lockfile`.
 
 ## Change Flow
 

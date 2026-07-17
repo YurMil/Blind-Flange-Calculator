@@ -24,7 +24,7 @@ env:
 
 jobs:
   quality:
-    name: Typecheck and build
+    name: Typecheck, test, and build
     runs-on: ubuntu-latest
 
     steps:
@@ -48,6 +48,9 @@ jobs:
 
       - name: Typecheck utility app
         run: pnpm typecheck:blind-flange
+
+      - name: Unit tests
+        run: pnpm test:blind-flange
 
       - name: Build utility app
         run: pnpm build:blind-flange

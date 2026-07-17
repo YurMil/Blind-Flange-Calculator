@@ -10,6 +10,12 @@ import {
   getFastenerGeometry,
 } from './bolting';
 import {getCustomGasketGeometry, getGasketGeometry} from './gasket';
+import {
+  calcPlateDeflection,
+  calcPlateStress,
+  calcThickForDeflection,
+  calcThickForStress,
+} from './platePhysics';
 import {getCalculatedPN} from './utils';
 import type {CalculationInput} from './bfTypes';
 import type {
@@ -22,48 +28,6 @@ import type {
   ManualStressCheck,
   ManualThicknessSummary,
 } from './manualCheckTypes';
-
-// --- Physics Helper Functions ---
-
-// 1. Calculate bending stress at center (Simply supported/bolted model)
-const calcPlateStress = (pressureMPa: number, radiusMm: number, thicknessMm: number): number => {
-  const nu = 0.3; // Poisson's ratio for steel
-  // Sigma = (3 * P * R^2 * (3 + nu)) / (8 * t^2)
-  return (3 * pressureMPa * Math.pow(radiusMm, 2) * (3 + nu)) / (8 * Math.pow(thicknessMm, 2));
-};
-
-// 2. Calculate max deflection at center (Simply supported model for conservative check)
-const calcPlateDeflection = (pressureMPa: number, radiusMm: number, thicknessMm: number, modulusMPa = 200000): number => {
-  const nu = 0.3;
-  // Rigidity D = (E * t^3) / (12 * (1 - nu^2))
-  const D = (modulusMPa * Math.pow(thicknessMm, 3)) / (12 * (1 - Math.pow(nu, 2)));
-  // w = ((5 + nu) * P * R^4) / (64 * D * (1 + nu))
-  // Simplified: w approx (0.7 * P * R^4) / (E * t^3)
-  const num = (5 + nu) * pressureMPa * Math.pow(radiusMm, 4);
-  const den = 64 * D * (1 + nu);
-  return num / den;
-};
-
-// 3. Inverse: Calculate required thickness to limit stress (Plasticity check)
-const calcThickForStress = (pressureMPa: number, radiusMm: number, limitStressMPa: number): number => {
-  const nu = 0.3;
-  // t = sqrt( (3 * P * R^2 * (3 + nu)) / (8 * Sigma_limit) )
-  return Math.sqrt((3 * pressureMPa * Math.pow(radiusMm, 2) * (3 + nu)) / (8 * limitStressMPa));
-};
-
-// 4. Inverse: Calculate required thickness to limit deflection (Stiffness check)
-const calcThickForDeflection = (pressureMPa: number, radiusMm: number, limitMm: number, modulusMPa = 200000): number => {
-  if (limitMm <= 0) return 0;
-  const nu = 0.3;
-  // From w formula, isolate t^3:
-  // w = ( (5+nu) * P * R^4 ) / ( 64 * [E*t^3 / 12(1-nu^2)] * (1+nu) )
-  // w = ( (5+nu) * P * R^4 * 12 * (1-nu^2) ) / ( 64 * E * t^3 * (1+nu) )
-  // t^3 = ( (5+nu) * P * R^4 * 12 * (1-nu^2) ) / ( 64 * E * w * (1+nu) )
-  
-  const num = (5 + nu) * pressureMPa * Math.pow(radiusMm, 4) * 12 * (1 - Math.pow(nu, 2));
-  const den = 64 * modulusMPa * limitMm * (1 + nu);
-  return Math.pow(num / den, 1/3);
-};
 
 const calcGeometryChecks = (params: {
   boltCircle: number;

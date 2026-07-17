@@ -1,0 +1,19 @@
+# Dependabot version updates for the Blind Flange Calculator workspace.
+
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /apps/blind-flange-calculator
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    labels:
+      - enhancement
+      - area: tooling
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    labels:
+      - area: tooling

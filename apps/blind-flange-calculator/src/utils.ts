@@ -16,69 +16,15 @@ import {
   getFastenerGeometry,
 } from './bolting';
 import {getCustomGasketGeometry, getGasketGeometry} from './gasket';
+import {
+  calcPlateDeflection,
+  calcPlateStress,
+  calcThickForDeflection,
+  calcThickForStress,
+} from './platePhysics';
 import type {CalculationInput, CalculationResult, En1092Dimensions, GeometryMode} from './bfTypes';
 
 const BAR_TO_MPA = 0.1;
-
-// --- Physics Formulas (Added to Standard Logic) ---
-
-// 1. Calculate max deflection at center
-const calcPlateDeflection = (
-  pressureMPa: number,
-  radiusMm: number,
-  thicknessMm: number,
-  modulusMPa: number,
-  nu: number = 0.3
-): number => {
-  if (thicknessMm <= 0 || radiusMm <= 0) return 999;
-  // Rigidity D = (E * t^3) / (12 * (1 - nu^2))
-  const D = (modulusMPa * Math.pow(thicknessMm, 3)) / (12 * (1 - Math.pow(nu, 2)));
-  // w = ((5 + nu) * P * R^4) / (64 * D * (1 + nu))
-  const num = (5 + nu) * pressureMPa * Math.pow(radiusMm, 4);
-  const den = 64 * D * (1 + nu);
-  return num / den;
-};
-
-// 2. Calculate bending stress at center
-const calcPlateStress = (
-  pressureMPa: number,
-  radiusMm: number,
-  thicknessMm: number,
-  nu: number = 0.3
-): number => {
-  if (thicknessMm <= 0 || radiusMm <= 0) return 999;
-  // Sigma = (3 * P * R^2 * (3 + nu)) / (8 * t^2)
-  return (3 * pressureMPa * Math.pow(radiusMm, 2) * (3 + nu)) / (8 * Math.pow(thicknessMm, 2));
-};
-
-// 3. Inverse: Calculate required thickness to limit stress (Plasticity check)
-const calcThickForStress = (
-  pressureMPa: number,
-  radiusMm: number,
-  limitStressMPa: number,
-  nu: number = 0.3
-): number => {
-  if (limitStressMPa <= 0 || radiusMm <= 0 || pressureMPa < 0) return 0;
-  // t = sqrt( (3 * P * R^2 * (3 + nu)) / (8 * Sigma_limit) )
-  const res = Math.sqrt((3 * pressureMPa * Math.pow(radiusMm, 2) * (3 + nu)) / (8 * limitStressMPa));
-  return isNaN(res) ? 0 : res;
-};
-
-// 4. Inverse: Calculate required thickness to limit deflection (Stiffness check)
-const calcThickForDeflection = (
-  pressureMPa: number,
-  radiusMm: number,
-  limitMm: number,
-  modulusMPa: number,
-  nu: number = 0.3
-): number => {
-  if (limitMm <= 0 || radiusMm <= 0 || pressureMPa < 0) return 0;
-  // Formula derived from w = ... solving for t
-  const num = (5 + nu) * pressureMPa * Math.pow(radiusMm, 4) * 12 * (1 - Math.pow(nu, 2));
-  const den = 64 * modulusMPa * limitMm * (1 + nu);
-  const res = Math.cbrt(num / den);
-  return isNaN(res) ? 0 : res;
-};
 
 // --- Standard Helpers ---
 

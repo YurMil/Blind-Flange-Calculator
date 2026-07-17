@@ -6,24 +6,27 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && node scripts/rename-html.mjs && node scripts/write-manifest.mjs",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
-    "framer-motion": "latest",
-    "jspdf": "latest",
-    "lucide-react": "latest",
-    "react": "latest",
-    "react-dom": "latest",
-    "replicad": "latest",
-    "replicad-opencascadejs": "latest"
+    "framer-motion": "12.38.0",
+    "jspdf": "4.2.1",
+    "lucide-react": "1.14.0",
+    "react": "19.2.5",
+    "react-dom": "19.2.5",
+    "replicad": "0.23.1",
+    "replicad-opencascadejs": "0.23.0"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "latest",
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
-    "@vitejs/plugin-react": "latest",
-    "tailwindcss": "latest",
-    "typescript": "latest",
-    "vite": "latest"
+    "@tailwindcss/vite": "4.2.4",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "6.0.1",
+    "tailwindcss": "4.2.4",
+    "typescript": "6.0.3",
+    "vite": "8.0.10",
+    "vitest": "3.2.4"
   }
 }

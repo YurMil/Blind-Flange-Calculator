@@ -1,6 +1,6 @@
 # Testing and Quality Strategy
 
-The current quality gate is TypeScript plus production build validation. As the app grows, it should add focused unit, integration, and browser tests around the highest-risk areas.
+The quality gate is TypeScript, unit tests, and production build validation. Component and browser tests remain planned follow-ups.
 
 ## Current Quality Gates
 
@@ -8,44 +8,53 @@ Local checks:
 
 ```bash
 corepack pnpm typecheck:blind-flange
+corepack pnpm test:blind-flange
 corepack pnpm build:blind-flange
 ```
 
-CI checks:
+CI checks (`.github/workflows/main.yml`):
 
 - Install dependencies with `pnpm install --frozen-lockfile`.
 - Typecheck the utility app.
+- Run unit tests (`pnpm test:blind-flange`).
 - Build the utility app.
-- Validate `app.html`.
-- Validate `manifest.json`.
-- Validate `assets/`.
+- Validate `app.html`, `manifest.json`, and `assets/`.
 - Upload the static app artifact.
 
-## Recommended Test Layers
+## Unit Tests (implemented)
 
-### Unit Tests
-
-Target:
-
-- Engineering calculations.
-- Standards lookup tables.
-- Manual checks.
-- Geometry validation.
-- File naming and export helpers.
-
-Recommended future tooling:
+Tooling:
 
 ```text
 vitest
-@testing-library/react
+apps/blind-flange-calculator/vitest.config.ts
+```
+
+Current coverage (`src/__tests__/`):
+
+| Suite | Focus |
+| --- | --- |
+| `platePhysics.test.ts` | Shared plate deflection/stress/thickness helpers |
+| `allowables.test.ts` | Yield temperature selection, γ factors, hydrotest |
+| `calculations.test.ts` | PN mapping, bolt loads/area, standard `calculateBlindFlange` |
+| `cadValidation.test.ts` | STEP geometry pre-checks |
+
+Run:
+
+```bash
+corepack pnpm test:blind-flange
+# or watch mode inside the app package:
+corepack pnpm --dir apps/blind-flange-calculator test:watch
 ```
 
 Best practice:
 
 - Use deterministic input fixtures.
 - Include representative DN/PN/material/temperature combinations.
-- Assert numeric tolerances explicitly.
-- Keep engineering test cases traceable to a standard clause or project rule when possible.
+- Assert numeric tolerances explicitly (`toBeCloseTo`).
+- Prefer testing shared domain modules over UI orchestration.
+
+## Recommended Next Layers
 
 ### Component Tests
 
@@ -56,11 +65,11 @@ Target:
 - Manual check panel state.
 - Export button enabled/disabled states.
 
-Best practice:
+Recommended tooling:
 
-- Test user-visible behavior rather than implementation details.
-- Verify validation messages.
-- Verify disabled states for invalid inputs.
+```text
+@testing-library/react
+```
 
 ### Browser Tests
 
@@ -71,70 +80,27 @@ Target:
 - PDF and STEP export controls do not crash.
 - Mobile viewport remains usable.
 
-Recommended future tooling:
+Recommended tooling:
 
 ```text
 playwright
 ```
 
-Best practice:
-
-- Test the production build, not only the dev server.
-- Include desktop and mobile viewport checks.
-- Capture screenshots for UI regressions when the layout changes.
-
-### CAD Worker Tests
-
-Target:
-
-- Worker protocol messages.
-- Geometry validation.
-- STEP generation failure handling.
-
-Best practice:
-
-- Keep worker tests separate from pure domain tests.
-- Use small representative geometry cases.
-- Verify that errors return typed messages instead of hanging.
+These remain deferred under bottleneck **B-04** (Mitigated, not fully closed until component/browser layers exist).
 
 ## Manual Regression Checklist
 
-Before releasing a meaningful calculation or export change, verify:
+Before a release that changes formulas or exports:
 
-- Standard geometry mode.
-- Custom geometry mode.
-- Automatic PN selection.
-- Hydrotest pressure logic.
-- Material and allowable stress selection.
-- Gasket and bolting calculations.
-- Manual check outputs.
-- PDF export.
-- Configuration JSON export/import.
-- STEP export.
-- Mobile layout.
-- Fullscreen or iframe host usage.
+1. Standard DN200 / 16 bar / P355GH calculation produces geometry and thickness.
+2. Custom auto-sizing returns at least one candidate for a typical nozzle ID.
+3. Manual check pass/fail toggles with intentional bad edge clearance.
+4. PDF export downloads without console errors.
+5. STEP export completes or shows a clear error (no infinite spinner).
+6. Configuration JSON round-trip restores inputs.
 
-## Quality Rules for Engineering Logic
+## Related Docs
 
-- Keep formulas centralized.
-- Do not duplicate formulas in UI or export code.
-- Keep unit conversions explicit.
-- Use typed result objects for warnings and failures.
-- Add tests when changing a formula, standard table, or validation rule.
-
-## Suggested Future Scripts
-
-When tests are added, use scripts like:
-
-```json
-{
-  "scripts": {
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:e2e": "playwright test",
-    "quality": "pnpm typecheck && pnpm test && pnpm build"
-  }
-}
-```
-
-Root aliases can then delegate to the app package in the same style as the current build and typecheck commands.
+- [Bottlenecks and Risks](../architecture/bottlenecks-and-risks.md) (B-04)
+- [CI/CD and Deployment](ci-cd-and-deployment.md)
+- [Development Workflow](development-workflow.md)
