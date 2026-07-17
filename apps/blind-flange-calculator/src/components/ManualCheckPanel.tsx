@@ -6,29 +6,12 @@ import type {CalculationInput, DesignConfiguration} from '../domain/types/bfType
 import {runManualCheck} from '../domain/calculations/manualCheck';
 import type {ManualCheckInput, ManualCheckResult} from '../domain/types/manualCheckTypes';
 import CommittedNumberInput from './CommittedNumberInput';
+import Field from './Field';
 import ManualCheckCharts from './ManualCheckCharts';
 import FlangeVisualizer from './FlangeVisualizer';
 
 const inputClass =
   'w-full rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 focus:border-cyan-400 focus:outline-hidden focus:ring-1 focus:ring-cyan-400';
-
-const Field = ({
-  label,
-  hint,
-  children,
-}: {
-  label: string;
-  hint?: string;
-  children: React.ReactNode;
-}) => (
-  <div className="space-y-1">
-    <div className="flex items-center justify-between">
-      <span className="text-xs uppercase tracking-wide text-slate-400">{label}</span>
-      {hint ? <span className="text-[11px] text-slate-500">{hint}</span> : null}
-    </div>
-    {children}
-  </div>
-);
 
 const BOLT_SIZES = ['M16', 'M20', 'M24', 'M27', 'M30', 'M33', 'M36', 'M39', 'M42', 'M45', 'M48', 'M52', 'M56', 'M60', 'M64'];
 
@@ -147,16 +130,18 @@ export default function ManualCheckPanel({
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           <div className="space-y-3">
             <p className="text-xs uppercase tracking-wide text-slate-400">Plate geometry</p>
-            <Field label="Outer diameter D" hint="mm">
+            <Field id="mc-outer-diameter" label="Outer diameter D" hint="mm" className="space-y-1">
               <CommittedNumberInput
+                id="mc-outer-diameter"
                 className={inputClass}
                 value={config.outerDiameter}
                 onCommit={(value) => updateConfig({outerDiameter: value})}
                 min={1}
               />
             </Field>
-            <Field label="Thickness (incl. CA)" hint="mm">
+            <Field id="mc-thickness" label="Thickness (incl. CA)" hint="mm" className="space-y-1">
               <CommittedNumberInput
+                id="mc-thickness"
                 className={inputClass}
                 value={config.thickness}
                 onCommit={(value) => updateConfig({thickness: value})}
@@ -170,16 +155,18 @@ export default function ManualCheckPanel({
 
           <div className="space-y-3">
             <p className="text-xs uppercase tracking-wide text-slate-400">Bolting configuration</p>
-            <Field label="Bolt circle K" hint="mm">
+            <Field id="mc-bolt-circle" label="Bolt circle K" hint="mm" className="space-y-1">
               <CommittedNumberInput
+                id="mc-bolt-circle"
                 className={inputClass}
                 value={config.boltCircle}
                 onCommit={(value) => updateConfig({boltCircle: value})}
                 min={1}
               />
             </Field>
-            <Field label="Bolt count" hint="qty">
+            <Field id="mc-bolt-count" label="Bolt count" hint="qty" className="space-y-1">
               <CommittedNumberInput
+                id="mc-bolt-count"
                 className={inputClass}
                 value={config.boltCount}
                 onCommit={(value) => updateConfig({boltCount: value})}
@@ -188,8 +175,9 @@ export default function ManualCheckPanel({
                 normalize={Math.round}
               />
             </Field>
-            <Field label="Bolt size">
+            <Field id="mc-bolt-size" label="Bolt size" className="space-y-1">
               <select
+                id="mc-bolt-size"
                 className={`${inputClass} appearance-none`}
                 value={config.boltSize}
                 onChange={(e) => {
@@ -205,8 +193,9 @@ export default function ManualCheckPanel({
                 ))}
               </select>
             </Field>
-            <Field label="Bolt hole diameter d2" hint="mm">
+            <Field id="mc-bolt-hole-diameter" label="Bolt hole diameter d2" hint="mm" className="space-y-1">
               <CommittedNumberInput
+                id="mc-bolt-hole-diameter"
                 className={inputClass}
                 value={config.boltHoleDiameter}
                 onCommit={(value) => updateConfig({boltHoleDiameter: value})}
@@ -223,16 +212,18 @@ export default function ManualCheckPanel({
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           <div className="space-y-3">
             <p className="text-xs uppercase tracking-wide text-slate-400">Gasket configuration</p>
-            <Field label="Gasket ID" hint="mm">
+            <Field id="mc-gasket-id" label="Gasket ID" hint="mm" className="space-y-1">
               <CommittedNumberInput
+                id="mc-gasket-id"
                 className={inputClass}
                 value={config.gasketId}
                 onCommit={(value) => updateConfig({gasketId: value})}
                 min={1}
               />
             </Field>
-            <Field label="Gasket OD" hint="mm">
+            <Field id="mc-gasket-od" label="Gasket OD" hint="mm" className="space-y-1">
               <CommittedNumberInput
+                id="mc-gasket-od"
                 className={inputClass}
                 value={config.gasketOd}
                 onCommit={(value) => updateConfig({gasketOd: value})}

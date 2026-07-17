@@ -133,11 +133,17 @@ export default function ResultsPanel({
         >
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">Results view</div>
-            <div className="inline-flex rounded-full border border-slate-800 bg-slate-950/60 p-1 text-xs">
+            <div
+              className="inline-flex rounded-full border border-slate-800 bg-slate-950/60 p-1 text-xs"
+              role="radiogroup"
+              aria-label="Results view"
+            >
               {(['auto', 'manual'] as const).map((mode) => (
                 <button
                   key={mode}
                   type="button"
+                  role="radio"
+                  aria-checked={viewMode === mode}
                   onClick={() => {
                     if (mode === 'auto' && fallbackConfig) {
                       onDesignConfigChange?.(fallbackConfig, false);

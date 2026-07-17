@@ -28,9 +28,10 @@ export default function BlindFlangeCalculator() {
             </div>
           </div>
           <div className="flex flex-col items-start gap-3 lg:items-end">
-            <label className="w-full max-w-sm space-y-1">
+            <label className="w-full max-w-sm space-y-1" htmlFor="bf-flange-tag">
               <span className="text-xs uppercase tracking-wide text-slate-400">Flange tag</span>
               <input
+                id="bf-flange-tag"
                 className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm font-semibold text-slate-100 outline-none transition focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
                 value={state.flangeTag}
                 onChange={(event) => state.handleFlangeTagChange(event.target.value)}

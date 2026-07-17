@@ -55,9 +55,28 @@ describe('InputForm', () => {
 
     render(<InputForm {...buildProps({onGeometryModeChange})} />);
 
-    expect(screen.getByRole('button', {name: 'Standard (DN)'})).toBeInTheDocument();
-    await user.click(screen.getByRole('button', {name: 'Custom geometry'}));
+    expect(screen.getByRole('radio', {name: 'Standard (DN)'})).toBeChecked();
+    await user.click(screen.getByRole('radio', {name: 'Custom geometry'}));
     expect(onGeometryModeChange).toHaveBeenCalledWith('custom');
+  });
+
+  it('exposes accessible names for primary parameter controls', () => {
+    render(<InputForm {...buildProps()} />);
+
+    expect(screen.getByLabelText(/^Diameter \(DN\)$/i)).toHaveDisplayValue('DN 100');
+    expect(screen.getByLabelText(/^Operating pressure \(bar\)$/i)).toHaveValue('10');
+    expect(screen.getByLabelText(/^Test pressure \(bar\)$/i)).toHaveValue('15');
+    expect(screen.getByLabelText(/^Temperature \(deg C\)$/i)).toHaveValue('20');
+    expect(screen.getByLabelText(/^Material$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Corrosion allowance \(mm\)$/i)).toHaveValue('1');
+    expect(screen.getByLabelText(/^Facing$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Gasket material$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Gasket thickness \(mm\)$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Fastener standard$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Fastener type$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Grade \/ Material$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Tightening condition$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Method$/i)).toBeInTheDocument();
   });
 
   it('shows custom geometry fields when geometryMode is custom', () => {
@@ -71,7 +90,8 @@ describe('InputForm', () => {
       />,
     );
 
-    expect(screen.getByText(/Flange outer diameter/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Flange outer diameter D/i)).toHaveValue('340');
+    expect(screen.getByLabelText(/Nozzle \/ pipe inner diameter ID/i)).toHaveValue('200');
   });
 
   it('shows test-pressure warning when requested', () => {
