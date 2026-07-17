@@ -12,4 +12,6 @@ export interface ResultCardProps {
   unit?: string;
   subtext?: string;
   highlight?: boolean;
+  /** Secondary metrics use a quieter visual weight than the verdict strip. */
+  tone?: 'primary' | 'secondary';
 }

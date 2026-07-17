@@ -1,36 +1,36 @@
 import {useEffect, useState} from 'react';
 import {AnimatePresence, motion} from 'framer-motion';
-import {AlertTriangle, Bolt, CircleDot, Gauge, Layers, ShieldCheck, Weight} from 'lucide-react';
+import {AlertTriangle, Bolt, CircleDot, Gauge, ShieldCheck, Weight} from 'lucide-react';
 import CustomSizingPanel from './CustomSizingPanel';
 import FlangeVisualizer from './FlangeVisualizer';
 import ManualCheckPanel from './ManualCheckPanel';
+import SizingVerdictStrip from './SizingVerdictStrip';
 import {MATERIALS} from '../domain/standards/data';
 import type {ResultsPanelProps} from '../domain/types/bfTypes';
 import type {ResultCardProps} from '../uiTypes';
 
 const formatFixed = (value: number, digits = 1) => value.toFixed(digits);
 
-const ResultCard = ({icon, label, value, unit, subtext, highlight}: ResultCardProps) => (
+const ResultCard = ({icon, label, value, unit, subtext, highlight, tone = 'secondary'}: ResultCardProps) => (
   <div
-    className={`rounded-2xl border p-4 ${
+    className={`rounded-2xl border p-3 ${
       highlight
         ? 'border-cyan-400/40 bg-cyan-500/15 text-cyan-100'
-        : 'border-slate-800 bg-slate-900/70 text-slate-100'
+        : 'border-slate-800 bg-slate-900/55 text-slate-100'
     }`}
   >
     <div className="flex items-start gap-3">
-      <div className="mt-1 text-cyan-300">{icon}</div>
+      <div className={`mt-0.5 ${highlight ? 'text-cyan-300' : 'text-slate-500'}`}>{icon}</div>
       <div>
         <p className="text-xs uppercase tracking-wide text-slate-400">{label}</p>
-        <p className="mt-1 text-2xl font-semibold">
+        <p className={`mt-1 font-semibold ${tone === 'primary' ? 'text-2xl' : 'text-xl'}`}>
           {value} {unit ? <span className="text-sm font-normal text-slate-400">{unit}</span> : null}
         </p>
-        {subtext ? <p className="mt-1 text-xs text-slate-400">{subtext}</p> : null}
+        {subtext ? <p className="mt-1 text-xs text-slate-500">{subtext}</p> : null}
       </div>
     </div>
   </div>
 );
-
 
 export default function ResultsPanel({
   result,
@@ -74,6 +74,30 @@ export default function ResultsPanel({
     setViewMode('auto');
   }, [result?.dims?.D, input.geometryMode, isUserDefined, onManualResultChange]);
 
+  const boltPass =
+    result?.boltingSummary === undefined ? null : Boolean(result.boltingSummary.pass);
+  const boltDetail =
+    result?.boltingSummary === undefined
+      ? undefined
+      : result.boltingSummary.pass
+        ? `${result.dims.bolts} × ${result.dims.size}`
+        : fastenerPlaceholder
+          ? 'Fastener data missing'
+          : result.boltingSummary.governingCase
+            ? `Governing: ${result.boltingSummary.governingCase}`
+            : 'Insufficient bolt area';
+
+  const verdict =
+    result ? (
+      <SizingVerdictStrip
+        selectedPn={result.selectedPN}
+        recommendedThicknessMm={thicknessUsed}
+        codeMinimumMm={result.finalThickness}
+        boltPass={boltPass}
+        boltDetail={boltDetail}
+      />
+    ) : null;
+
   if (result && boltFail) {
     return (
       <AnimatePresence mode="wait">
@@ -85,6 +109,7 @@ export default function ResultsPanel({
           transition={{duration: 0.3}}
           className="space-y-6"
         >
+          {verdict}
           <div className="rounded-3xl border border-amber-500/40 bg-amber-500/10 p-6 text-amber-100">
             <div className="flex items-start gap-3">
               <AlertTriangle size={20} className="mt-1 text-amber-300" />
@@ -131,6 +156,8 @@ export default function ResultsPanel({
           transition={{duration: 0.3}}
           className="space-y-6"
         >
+          {verdict}
+
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">Results view</div>
             <div
@@ -182,137 +209,142 @@ export default function ResultsPanel({
 
           {viewMode === 'auto' ? (
             <>
-            <div className="grid gap-4 md:grid-cols-2">
-            <ResultCard
-              highlight
-              icon={<Layers size={20} />}
-              label="Recommended thickness"
-              value={formatFixed(thicknessUsed, 0)}
-              unit="mm"
-              subtext={`Calculated: ${formatFixed(result.finalThickness, 2)} mm`}
-            />
-            <ResultCard
-              icon={<Weight size={20} />}
-              label="Flange weight"
-              value={formatFixed(
-                Math.PI * Math.pow(result.dims.D / 2000, 2) * (thicknessUsed / 1000) * MATERIALS[input.material].density * 1000,
-                1,
-              )}
-              unit="kg"
-              subtext="Based on flange OD and thickness"
-            />
-          </div>
+              <div>
+                <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Reference metrics</p>
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  <ResultCard
+                    icon={<Weight size={18} />}
+                    label="Flange weight"
+                    value={formatFixed(
+                      Math.PI *
+                        Math.pow(result.dims.D / 2000, 2) *
+                        (thicknessUsed / 1000) *
+                        MATERIALS[input.material].density *
+                        1000,
+                      1,
+                    )}
+                    unit="kg"
+                    subtext="Based on flange OD and recommended plate thickness"
+                  />
+                  <ResultCard
+                    icon={<Bolt size={18} />}
+                    label={`Bolt pattern (PN ${result.selectedPN})`}
+                    value={result.dims.bolts.toString()}
+                    unit="qty"
+                    subtext={`Thread ${result.dims.size} · circle ${result.dims.k} mm`}
+                  />
+                  <ResultCard
+                    icon={<CircleDot size={18} />}
+                    label="Gasket mean dia"
+                    value={formatFixed(result.gasketMeanDiameter, 0)}
+                    unit="mm"
+                    subtext="G_eff (EN 1514-1)"
+                  />
+                  <ResultCard
+                    icon={<Gauge size={18} />}
+                    label="Allowable stress (operating)"
+                    value={formatFixed(result.allowableStressOp, 1)}
+                    unit="MPa"
+                    subtext="Material allowable at operating temperature"
+                  />
+                  <ResultCard
+                    icon={<ShieldCheck size={18} />}
+                    label="Allowable stress (test)"
+                    value={formatFixed(result.allowableStressTest, 1)}
+                    unit="MPa"
+                    subtext="Material allowable for hydrotest"
+                  />
+                </div>
+              </div>
 
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <ResultCard
-              icon={<Bolt size={20} />}
-              label={`Bolts (PN ${result.selectedPN})`}
-              value={result.dims.bolts.toString()}
-              unit="qty"
-              subtext={`Thread ${result.dims.size}`}
-            />
-            <ResultCard
-              icon={<CircleDot size={20} />}
-              label="Gasket mean dia"
-              value={formatFixed(result.gasketMeanDiameter, 0)}
-              unit="mm"
-              subtext="G_eff (EN 1514-1)"
-            />
-            <ResultCard
-              icon={<Gauge size={20} />}
-              label="Allowable stress"
-              value={formatFixed(result.allowableStressOp, 1)}
-              unit="MPa"
-              subtext="Operating"
-            />
-            <ResultCard
-              icon={<ShieldCheck size={20} />}
-              label="Allowable stress"
-              value={formatFixed(result.allowableStressTest, 1)}
-              unit="MPa"
-              subtext="Test"
-            />
-          </div>
+              <FlangeVisualizer
+                dn={dn}
+                dims={result.dims}
+                selectedPN={result.selectedPN}
+                recommendedThickness={thicknessUsed}
+                gasketMeanDiameter={result.gasketMeanDiameter}
+                gasketId={result.gasketId}
+                gasketOd={result.gasketOd}
+              />
 
-          <FlangeVisualizer
-            dn={dn}
-            dims={result.dims}
-            selectedPN={result.selectedPN}
-            recommendedThickness={thicknessUsed}
-            gasketMeanDiameter={result.gasketMeanDiameter}
-            gasketId={result.gasketId}
-            gasketOd={result.gasketOd}
-          />
-
-          <div className="rounded-3xl border border-slate-800 bg-slate-950/40 p-6">
-            <h3 className="text-lg font-semibold text-slate-100">Calculation details (EN 13445-3)</h3>
-            <div className="mt-4 overflow-x-auto">
-              <table className="w-full text-sm text-slate-300">
-                <thead className="text-xs uppercase text-slate-500">
-                  <tr>
-                    <th className="py-2 text-left">Parameter</th>
-                    <th className="py-2 text-left">Value</th>
-                    <th className="py-2 text-left">Comment</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-t border-slate-800">
-                    <td className="py-2 font-medium text-slate-200">Selected PN class</td>
-                    <td className="py-2">PN {result.selectedPN}</td>
-                    <td className="py-2 text-slate-400">
-                      {input.geometryMode === 'custom'
-                        ? 'Custom geometry mode'
-                        : result.source === 'en1092'
-                          ? `Nearest standard \u2265 ${pressureOp} bar`
-                          : `Custom sizing for PN ${targetPN}`}
-                    </td>
-                  </tr>
-                  <tr className="border-t border-slate-800">
-                    <td className="py-2 font-medium text-slate-200">Min. thickness</td>
-                    <td className="py-2">{formatFixed(result.minThickness, 2)} mm</td>
-                    <td className="py-2 text-slate-400">Before corrosion allowance</td>
-                  </tr>
-                  <tr className="border-t border-slate-800">
-                    <td className="py-2 font-medium text-slate-200">Final thickness</td>
-                    <td className="py-2">{formatFixed(result.finalThickness, 2)} mm</td>
-                    <td className="py-2 text-slate-400">Includes corrosion allowance</td>
-                  </tr>
-                  <tr className="border-t border-slate-800">
-                    <td className="py-2 font-medium text-slate-200">Bolt pattern</td>
-                    <td className="py-2">
-                      {result.dims.bolts} x {result.dims.size}
-                    </td>
-                    <td className="py-2 text-slate-400">Bolt circle {result.dims.k} mm</td>
-                  </tr>
-                  {result.boltingSummary ? (
-                    <tr className="border-t border-slate-800">
-                      <td className="py-2 font-medium text-slate-200">Fastener</td>
-                      <td className="py-2">
-                        {result.boltingSummary.fastenerStandard} / {result.boltingSummary.fastenerType}
-                      </td>
-                      <td className="py-2 text-slate-400">
-                        {result.boltingSummary.fastenerLabel ?? result.boltingSummary.fastenerGradeId}
-                        {result.boltingSummary.geometryAssumption ? ` · ${result.boltingSummary.geometryAssumption}` : ''}
-                      </td>
-                    </tr>
-                  ) : null}
-                  {result.boltTorque ? (
-                    <tr className="border-t border-slate-800">
-                      <td className="py-2 font-medium text-slate-200">Bolt torque</td>
-                      <td className="py-2">
-                        {formatFixed(result.boltTorque.torqueMinNm ?? result.boltTorque.torqueNm, 0)}–
-                        {formatFixed(result.boltTorque.torqueMaxNm ?? result.boltTorque.torqueNm, 0)} N·m
-                      </td>
-                      <td className="py-2 text-slate-400">
-                        {result.boltTorque.governingCaseUsed}, util {formatFixed(result.boltTorque.preloadUtilization * 100, 0)}%
-                        {result.boltTorque.cappedByProof ? ' (capped)' : ''}
-                      </td>
-                    </tr>
-                  ) : null}
-                </tbody>
-              </table>
-            </div>
-          </div>
+              <div className="rounded-3xl border border-slate-800 bg-slate-950/40 p-6">
+                <h3 className="text-lg font-semibold text-slate-100">Calculation details (EN 13445-3)</h3>
+                <p className="mt-1 text-xs text-slate-500">Reference breakdown — primary answers are in the sizing verdict above.</p>
+                <div className="mt-4 overflow-x-auto">
+                  <table className="w-full text-sm text-slate-300">
+                    <thead className="text-xs uppercase text-slate-500">
+                      <tr>
+                        <th className="py-2 text-left">Parameter</th>
+                        <th className="py-2 text-left">Value</th>
+                        <th className="py-2 text-left">Comment</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="border-t border-slate-800">
+                        <td className="py-2 font-medium text-slate-200">Selected PN class</td>
+                        <td className="py-2">PN {result.selectedPN}</td>
+                        <td className="py-2 text-slate-400">
+                          {input.geometryMode === 'custom'
+                            ? 'Custom geometry mode'
+                            : result.source === 'en1092'
+                              ? `Nearest standard \u2265 ${pressureOp} bar`
+                              : `Custom sizing for PN ${targetPN}`}
+                        </td>
+                      </tr>
+                      <tr className="border-t border-slate-800">
+                        <td className="py-2 font-medium text-slate-200">Code minimum (before CA)</td>
+                        <td className="py-2">{formatFixed(result.minThickness, 2)} mm</td>
+                        <td className="py-2 text-slate-400">Calculated plate requirement</td>
+                      </tr>
+                      <tr className="border-t border-slate-800">
+                        <td className="py-2 font-medium text-slate-200">Code minimum (with CA)</td>
+                        <td className="py-2">{formatFixed(result.finalThickness, 2)} mm</td>
+                        <td className="py-2 text-slate-400">Includes corrosion allowance</td>
+                      </tr>
+                      <tr className="border-t border-slate-800">
+                        <td className="py-2 font-medium text-slate-200">Recommended plate thickness</td>
+                        <td className="py-2">{formatFixed(result.recommendedThickness, 0)} mm</td>
+                        <td className="py-2 text-slate-400">Stocked plate after practical rounding</td>
+                      </tr>
+                      <tr className="border-t border-slate-800">
+                        <td className="py-2 font-medium text-slate-200">Bolt pattern</td>
+                        <td className="py-2">
+                          {result.dims.bolts} x {result.dims.size}
+                        </td>
+                        <td className="py-2 text-slate-400">Bolt circle {result.dims.k} mm</td>
+                      </tr>
+                      {result.boltingSummary ? (
+                        <tr className="border-t border-slate-800">
+                          <td className="py-2 font-medium text-slate-200">Fastener</td>
+                          <td className="py-2">
+                            {result.boltingSummary.fastenerStandard} / {result.boltingSummary.fastenerType}
+                          </td>
+                          <td className="py-2 text-slate-400">
+                            {result.boltingSummary.fastenerLabel ?? result.boltingSummary.fastenerGradeId}
+                            {result.boltingSummary.geometryAssumption
+                              ? ` · ${result.boltingSummary.geometryAssumption}`
+                              : ''}
+                          </td>
+                        </tr>
+                      ) : null}
+                      {result.boltTorque ? (
+                        <tr className="border-t border-slate-800">
+                          <td className="py-2 font-medium text-slate-200">Bolt torque</td>
+                          <td className="py-2">
+                            {formatFixed(result.boltTorque.torqueMinNm ?? result.boltTorque.torqueNm, 0)}–
+                            {formatFixed(result.boltTorque.torqueMaxNm ?? result.boltTorque.torqueNm, 0)} N·m
+                          </td>
+                          <td className="py-2 text-slate-400">
+                            {result.boltTorque.governingCaseUsed}, util{' '}
+                            {formatFixed(result.boltTorque.preloadUtilization * 100, 0)}%
+                            {result.boltTorque.cappedByProof ? ' (capped)' : ''}
+                          </td>
+                        </tr>
+                      ) : null}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </>
           ) : null}
         </motion.div>

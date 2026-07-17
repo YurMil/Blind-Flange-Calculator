@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import type {ReactNode} from 'react';
 import {AnimatePresence, motion} from 'framer-motion';
-import {Bolt, Calculator, CircleDot, Gauge, Layers, Settings2, ShieldCheck, Weight} from 'lucide-react';
+import {Bolt, Calculator, CircleDot, Gauge, Settings2, ShieldCheck, Weight} from 'lucide-react';
 import {
   calculateCustomBlindFlange,
   getCustomSizingFailure,
@@ -12,6 +12,7 @@ import {
 import {isFastenerPlaceholder, resolveFastenerSelection} from '../domain/standards/data';
 import FlangeVisualizer from './FlangeVisualizer';
 import ManualCheckPanel from './ManualCheckPanel';
+import SizingVerdictStrip from './SizingVerdictStrip';
 import type {CalculationInput, DesignConfiguration} from '../domain/types/bfTypes';
 import type {ManualCheckResult, ManualMode} from '../domain/types/manualCheckTypes';
 
@@ -288,53 +289,53 @@ export default function CustomSizingPanel({
             transition={{duration: 0.25}}
             className="space-y-6"
           >
-            <div className="grid gap-4 md:grid-cols-2">
+            <SizingVerdictStrip
+              selectedPn={custom.result.selectedPN}
+              recommendedThicknessMm={custom.result.recommendedThickness}
+              codeMinimumMm={custom.result.finalThickness}
+              boltPass={custom.result.boltingSummary ? Boolean(custom.result.boltingSummary.pass) : true}
+              boltDetail={`${custom.result.dims.bolts} × ${custom.result.dims.size}`}
+            />
+
+            <div>
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Reference metrics</p>
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               <ResultCard
-                highlight
-                icon={<Layers size={20} />}
-                label="Recommended thickness"
-                value={formatFixed(custom.result.recommendedThickness, 0)}
-                unit="mm"
-                subtext={`Calculated: ${formatFixed(custom.result.finalThickness, 2)} mm`}
-              />
-              <ResultCard
-                icon={<Weight size={20} />}
+                icon={<Weight size={18} />}
                 label="Weight (estimate)"
                 value={formatFixed(custom.result.weight, 1)}
                 unit="kg"
-                subtext="Based on D and thickness"
+                subtext="Based on flange OD and recommended plate thickness"
               />
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               <ResultCard
-                icon={<Bolt size={20} />}
-                label="Bolts"
+                icon={<Bolt size={18} />}
+                label="Bolt pattern"
                 value={custom.result.dims.bolts.toString()}
                 unit="qty"
                 subtext={`Thread ${custom.result.dims.size}`}
               />
               <ResultCard
-                icon={<CircleDot size={20} />}
+                icon={<CircleDot size={18} />}
                 label="Gasket mean diameter"
                 value={formatFixed(custom.result.gasketMeanDiameter, 0)}
                 unit="mm"
                 subtext="G_eff (EN 1514-1)"
               />
               <ResultCard
-                icon={<Gauge size={20} />}
-                label="Allowable stress"
+                icon={<Gauge size={18} />}
+                label="Allowable stress (operating)"
                 value={formatFixed(custom.result.allowableStressOp, 1)}
                 unit="MPa"
-                subtext="Operating"
+                subtext="Material allowable at operating temperature"
               />
               <ResultCard
-                icon={<ShieldCheck size={20} />}
-                label="Allowable stress"
+                icon={<ShieldCheck size={18} />}
+                label="Allowable stress (test)"
                 value={formatFixed(custom.result.allowableStressTest, 1)}
                 unit="MPa"
-                subtext="Test"
+                subtext="Material allowable for hydrotest"
               />
+              </div>
             </div>
 
             <FlangeVisualizer
