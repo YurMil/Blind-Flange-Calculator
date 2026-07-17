@@ -7,7 +7,7 @@ test.describe('Blind Flange Calculator smoke', () => {
     await page.goto('/app.html');
 
     await expect(page.getByRole('heading', {name: 'Blind Flange Calculator'})).toBeVisible();
-    await expect(page.getByRole('button', {name: 'Standard (DN)'})).toBeVisible();
+    await expect(page.getByRole('radio', {name: 'Standard (DN)'})).toBeVisible();
 
     // Default inputs already produce a standard result; assert results / export surface.
     await expect(page.getByText('PN selection', {exact: true})).toBeVisible();
@@ -16,7 +16,7 @@ test.describe('Blind Flange Calculator smoke', () => {
     await expect(page.getByRole('button', {name: 'Download STEP'})).toBeVisible();
 
     // Switch to custom mode to exercise a primary interaction path.
-    await page.getByRole('button', {name: 'Custom geometry'}).click();
+    await page.getByRole('radio', {name: 'Custom geometry'}).click();
     await expect(page.getByText('Flange outer diameter D')).toBeVisible();
   });
 });
