@@ -93,7 +93,7 @@ src/cad/hooks/useBlindFlangeCad.ts            React hook (warmup + generate)
 
 Geometry source priority: manual check input → design config → custom result → standard result.
 
-MVP STEP solid is a flat disk with through bolt holes. Raised face / RTJ features are not modeled yet.
+STEP solid: disk + optional RF boss or RTJ groove + through bolt holes. Facing dimensions use screening heuristics (not a full B16.5 RTJ table).
 
 ## Export and Reporting
 
