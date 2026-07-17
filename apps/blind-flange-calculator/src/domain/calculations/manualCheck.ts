@@ -1,4 +1,4 @@
-import {getFastenerCatalogEntry, getFastenerEffectiveProps, getFastenerLabel, isFastenerPlaceholder, MATERIALS} from './data';
+import {getFastenerCatalogEntry, getFastenerEffectiveProps, getFastenerLabel, isFastenerPlaceholder, MATERIALS} from '../standards/data';
 import {getAllowableStress, getHydroTestPressure} from './allowables';
 import {
   EDGE_CLEARANCE_MIN_MM,
@@ -17,7 +17,7 @@ import {
   calcThickForStress,
 } from './platePhysics';
 import {getCalculatedPN} from './utils';
-import type {CalculationInput} from './bfTypes';
+import type {CalculationInput} from '../types/bfTypes';
 import type {
   ManualBoltSummary,
   ManualCheckInput,
@@ -27,7 +27,7 @@ import type {
   ManualGasketSummary,
   ManualStressCheck,
   ManualThicknessSummary,
-} from './manualCheckTypes';
+} from '../types/manualCheckTypes';
 
 const calcGeometryChecks = (params: {
   boltCircle: number;

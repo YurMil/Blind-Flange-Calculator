@@ -1,6 +1,6 @@
-import type {CalculationInput, CalculationResult} from '../../bfTypes';
-import type {CustomSizingDebug} from '../../custom';
-import type {ManualCheckResult} from '../../manualCheckTypes';
+import type {CalculationInput, CalculationResult} from '../../domain/types/bfTypes';
+import type {CustomSizingDebug} from '../../domain/calculations/custom';
+import type {ManualCheckResult} from '../../domain/types/manualCheckTypes';
 import {downloadBlob} from '../../download';
 import {renderStandardReport} from './standardReport';
 import {renderManualReport} from './manualReport';

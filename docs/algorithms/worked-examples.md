@@ -6,7 +6,7 @@ Illustrative walkthroughs aligned with the implemented code. For full formula de
 
 ## Example A — PN Class Selection
 
-**Source:** `getCalculatedPN` in `apps/blind-flange-calculator/src/utils.ts`
+**Source:** `getCalculatedPN` in `apps/blind-flange-calculator/src/domain/calculations/utils.ts`
 
 | Operating pressure (bar) | Selected target PN |
 | ---: | ---: |
@@ -57,7 +57,7 @@ Typical outputs (names vary by type definitions): outer diameter `D`, bolt circl
 
 ## Example B — Gasket Loads (Wm1 / Wm2)
 
-**Source:** `calcRequiredBoltLoads` in `apps/blind-flange-calculator/src/bolting.ts`
+**Source:** `calcRequiredBoltLoads` in `apps/blind-flange-calculator/src/domain/calculations/bolting.ts`
 
 Given effective gasket diameter `G` (mm), effective width `b` (mm), factors `m` and `y`, and pressures in bar:
 
@@ -94,7 +94,7 @@ Governing case is the maximum of seating, operating, and hydrotest required area
 
 ## Example C — Allowable Stress
 
-**Source:** `getAllowableStress` in `apps/blind-flange-calculator/src/allowables.ts`
+**Source:** `getAllowableStress` in `apps/blind-flange-calculator/src/domain/calculations/allowables.ts`
 
 ```text
 S = Re_T / gamma
@@ -113,7 +113,7 @@ Example: temperatures `{20, 100, 150, 200}`. At 175 °C the code uses the 150 °
 
 ## Example D — Custom Auto-Sizing Search
 
-**Source:** `calculateCustomBlindFlange` in `apps/blind-flange-calculator/src/custom.ts`
+**Source:** `calculateCustomBlindFlange` in `apps/blind-flange-calculator/src/domain/calculations/custom.ts`
 
 Algorithm outline:
 
@@ -135,7 +135,7 @@ This is a discrete brute-force search (on the order of ~100+ evaluations per run
 
 ## Example E — Manual Geometry Gate
 
-**Source:** `runManualCheck` in `apps/blind-flange-calculator/src/manualCheck.ts`
+**Source:** `runManualCheck` in `apps/blind-flange-calculator/src/domain/calculations/manualCheck.ts`
 
 Checks include (among others):
 

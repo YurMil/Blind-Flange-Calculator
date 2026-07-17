@@ -9,8 +9,8 @@ import type {
   GeometryMode,
   MaterialId,
   TighteningMethod,
-} from '../bfTypes';
-import {AVAILABLE_DNS, DEFAULT_FASTENER_ID, MATERIALS} from '../data';
+} from '../domain/types/bfTypes';
+import {AVAILABLE_DNS, DEFAULT_FASTENER_ID, MATERIALS} from '../domain/standards/data';
 
 export const CURRENT_CONFIG_VERSION = 1;
 

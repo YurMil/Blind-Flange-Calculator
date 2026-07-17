@@ -4,8 +4,9 @@ import {AlertTriangle, Bolt, CircleDot, Gauge, Layers, ShieldCheck, Weight} from
 import CustomSizingPanel from './CustomSizingPanel';
 import FlangeVisualizer from './FlangeVisualizer';
 import ManualCheckPanel from './ManualCheckPanel';
-import {MATERIALS} from '../data';
-import type {ResultCardProps, ResultsPanelProps} from '../bfTypes';
+import {MATERIALS} from '../domain/standards/data';
+import type {ResultsPanelProps} from '../domain/types/bfTypes';
+import type {ResultCardProps} from '../uiTypes';
 
 const formatFixed = (value: number, digits = 1) => value.toFixed(digits);
 

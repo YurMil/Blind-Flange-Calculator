@@ -1,5 +1,5 @@
-import type {CalculationResult, DesignConfiguration, GasketFacing} from '../../bfTypes';
-import type {ManualCheckResult} from '../../manualCheckTypes';
+import type {CalculationResult, DesignConfiguration, GasketFacing} from '../../domain/types/bfTypes';
+import type {ManualCheckResult} from '../../domain/types/manualCheckTypes';
 import type {BlindFlangeCadGeometry, BlindFlangeCadSource, BlindFlangeFacingType} from '../types/cad-types';
 import {assertValidBlindFlangeCadGeometry} from './validation';
 

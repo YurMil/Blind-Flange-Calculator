@@ -1,6 +1,6 @@
 import {useMemo} from 'react';
 import {Ruler} from 'lucide-react';
-import type {FlangeVisualizerProps} from '../bfTypes';
+import type {FlangeVisualizerProps} from '../domain/types/bfTypes';
 
 export default function FlangeVisualizer({
   dn,

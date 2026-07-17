@@ -6,7 +6,7 @@ import type {
   FastenerStandard,
   FastenerType,
   MaterialCatalog,
-} from './bfTypes';
+} from '../types/bfTypes';
 
 export type StandardsProvenanceEntry = {
   family: 'materials' | 'en1092' | 'gaskets' | 'fasteners';

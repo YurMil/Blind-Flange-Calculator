@@ -1,10 +1,10 @@
 import {useEffect, useMemo} from 'react';
 import {AlertTriangle, CheckCircle2, Target, Wrench} from 'lucide-react';
-import {getBoltHoleDiameter} from '../bolting';
-import {getFastenerCatalogEntry, getFastenerEffectiveProps} from '../data';
-import type {CalculationInput, DesignConfiguration} from '../bfTypes';
-import {runManualCheck} from '../manualCheck';
-import type {ManualCheckInput, ManualCheckResult} from '../manualCheckTypes';
+import {getBoltHoleDiameter} from '../domain/calculations/bolting';
+import {getFastenerCatalogEntry, getFastenerEffectiveProps} from '../domain/standards/data';
+import type {CalculationInput, DesignConfiguration} from '../domain/types/bfTypes';
+import {runManualCheck} from '../domain/calculations/manualCheck';
+import type {ManualCheckInput, ManualCheckResult} from '../domain/types/manualCheckTypes';
 import CommittedNumberInput from './CommittedNumberInput';
 import ManualCheckCharts from './ManualCheckCharts';
 import FlangeVisualizer from './FlangeVisualizer';

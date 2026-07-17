@@ -5,14 +5,16 @@ This document describes the calculation model currently implemented in the Blind
 The model is implemented mainly in:
 
 ```text
-apps/blind-flange-calculator/src/utils.ts
-apps/blind-flange-calculator/src/custom.ts
-apps/blind-flange-calculator/src/manualCheck.ts
-apps/blind-flange-calculator/src/allowables.ts
-apps/blind-flange-calculator/src/bolting.ts
-apps/blind-flange-calculator/src/gasket.ts
-apps/blind-flange-calculator/src/data.ts
+apps/blind-flange-calculator/src/domain/calculations/utils.ts
+apps/blind-flange-calculator/src/domain/calculations/custom.ts
+apps/blind-flange-calculator/src/domain/calculations/manualCheck.ts
+apps/blind-flange-calculator/src/domain/calculations/allowables.ts
+apps/blind-flange-calculator/src/domain/calculations/bolting.ts
+apps/blind-flange-calculator/src/domain/calculations/gasket.ts
+apps/blind-flange-calculator/src/domain/standards/data.ts
 ```
+
+(See [B-10](../architecture/bottlenecks-and-risks.md#b-10--domain-layer-not-physically-isolated) — these now live under `src/domain/`.)
 
 ## Scope
 

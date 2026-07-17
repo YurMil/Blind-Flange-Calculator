@@ -26,8 +26,8 @@ The app is a single-screen Vite/React utility. There is no router and no backend
 
 | Concern | Source of truth |
 | --- | --- |
-| Formulas and units | `apps/blind-flange-calculator/src/{utils,custom,manualCheck,allowables,bolting,gasket}.ts` + [Mathematical Model](../development/mathematical-model.md) |
-| Standards tables | `apps/blind-flange-calculator/src/data.ts` (plus bolt tables in `bolting.ts`) |
+| Formulas and units | `apps/blind-flange-calculator/src/domain/calculations/{utils,custom,manualCheck,allowables,bolting,gasket}.ts` + [Mathematical Model](../development/mathematical-model.md) |
+| Standards tables | `apps/blind-flange-calculator/src/domain/standards/data.ts` (plus bolt tables in `bolting.ts`) |
 | CAD/STEP | `apps/blind-flange-calculator/src/cad/**` + STEP planning doc |
 | Build/CI | `apps/blind-flange-calculator/vite.config.ts`, `package.json` scripts, `.github/workflows/main.yml` |
 | Architectural debt tracking | [Bottlenecks and Risks](bottlenecks-and-risks.md) |

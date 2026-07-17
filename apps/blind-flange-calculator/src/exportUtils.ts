@@ -1,5 +1,5 @@
-import type {CalculationResult} from './bfTypes';
-import type {ManualCheckResult} from './manualCheckTypes';
+import type {CalculationResult} from './domain/types/bfTypes';
+import type {ManualCheckResult} from './domain/types/manualCheckTypes';
 import {downloadBlob} from './download';
 
 export {exportPdfReport} from './export/pdf';

@@ -1,7 +1,7 @@
 import {describe, expect, it} from 'vitest';
-import {calcBoltAreaChecks, calcRequiredBoltLoads} from '../bolting';
-import {getCalculatedPN, calculateBlindFlange} from '../utils';
-import type {CalculationInput} from '../bfTypes';
+import {calcBoltAreaChecks, calcRequiredBoltLoads} from '../domain/calculations/bolting';
+import {getCalculatedPN, calculateBlindFlange} from '../domain/calculations/utils';
+import type {CalculationInput} from '../domain/types/bfTypes';
 
 describe('getCalculatedPN', () => {
   it.each([

@@ -1,12 +1,12 @@
-import {getFastenerCatalogEntry, getFastenerEffectiveProps} from '../../data';
+import {getFastenerCatalogEntry, getFastenerEffectiveProps} from '../../domain/standards/data';
 import {
   EDGE_CLEARANCE_MIN_MM,
   FASTENER_GAP_MIN_MM,
   getFastenerFeatureOD,
   getFastenerGeometry,
-} from '../../bolting';
-import type {CalculationInput} from '../../bfTypes';
-import type {ManualCheckResult} from '../../manualCheckTypes';
+} from '../../domain/calculations/bolting';
+import type {CalculationInput} from '../../domain/types/bfTypes';
+import type {ManualCheckResult} from '../../domain/types/manualCheckTypes';
 import {createPdfDoc} from './pdfDoc';
 import {toFixed, fmt, drawSectionHeader, drawField, drawWrapped, drawBar, drawKeyValueRows} from './pdfPrimitives';
 import {sanitizePdfText} from './pdfText';

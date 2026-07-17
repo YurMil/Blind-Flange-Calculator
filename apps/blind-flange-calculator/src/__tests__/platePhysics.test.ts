@@ -4,7 +4,7 @@ import {
   calcPlateStress,
   calcThickForDeflection,
   calcThickForStress,
-} from '../platePhysics';
+} from '../domain/calculations/platePhysics';
 
 describe('platePhysics', () => {
   const P = 1.6; // MPa

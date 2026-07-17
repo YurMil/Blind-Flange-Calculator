@@ -1,6 +1,6 @@
 import {useMemo, useRef, useState} from 'react';
 import {Box, Download, Loader2, X} from 'lucide-react';
-import type {CalculationInput} from '../bfTypes';
+import type {CalculationInput} from '../domain/types/bfTypes';
 import type {BlindFlangeCadSource} from '../cad/types/cad-types';
 import {computeBlindFlangeCadGeometry} from '../cad/geometry/compute-flange-geometry';
 import {useBlindFlangeCad} from '../cad/hooks/useBlindFlangeCad';

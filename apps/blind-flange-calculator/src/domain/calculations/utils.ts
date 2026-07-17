@@ -6,7 +6,7 @@ import {
   getFastenerEffectiveProps,
   isFastenerPlaceholder,
   resolveFastenerSelection,
-} from './data';
+} from '../standards/data';
 import {getAllowableStress, getHydroTestPressure} from './allowables';
 import {
   calcBoltAreaChecks,
@@ -22,7 +22,7 @@ import {
   calcThickForDeflection,
   calcThickForStress,
 } from './platePhysics';
-import type {CalculationInput, CalculationResult, En1092Dimensions, GeometryMode} from './bfTypes';
+import type {CalculationInput, CalculationResult, En1092Dimensions, GeometryMode} from '../types/bfTypes';
 
 const BAR_TO_MPA = 0.1;
 

@@ -21,7 +21,7 @@ Priority is relative engineering risk, not a delivery commitment.
 | Priority | High |
 | Status | Resolved |
 | Area | Domain |
-| Resolved in | shared `apps/blind-flange-calculator/src/platePhysics.ts`; covered by unit tests |
+| Resolved in | shared `apps/blind-flange-calculator/src/domain/calculations/platePhysics.ts`; covered by unit tests |
 
 **Symptom.** Circular-plate helpers (`calcPlateDeflection`, `calcPlateStress`, `calcThickForStress`, `calcThickForDeflection`) existed in nearly identical form in:
 
@@ -29,9 +29,7 @@ Priority is relative engineering risk, not a delivery commitment.
 - `apps/blind-flange-calculator/src/custom.ts`
 - `apps/blind-flange-calculator/src/manualCheck.ts`
 
-**Resolution.** Helpers now live in `platePhysics.ts` and are imported by all three calculation paths. Unit fixtures live in `src/__tests__/platePhysics.test.ts`.
-
-**Follow-up (optional).** Move `platePhysics.ts` under `src/domain/calculations/` when B-10 lands.
+**Resolution.** Helpers now live in `platePhysics.ts` and are imported by all three calculation paths. Unit fixtures live in `src/__tests__/platePhysics.test.ts`. (`platePhysics.ts` and the other calculation paths above now live under `src/domain/calculations/` — see B-10.)
 ---
 
 ## B-02 — Oversized application container state
@@ -187,7 +185,7 @@ See [Testing and Quality](../development/testing-and-quality.md).
 | Priority | Medium |
 | Status | Resolved |
 | Area | Standards data |
-| Resolved in | `src/data.ts` (`STANDARDS_PROVENANCE`, placeholder quarantine) |
+| Resolved in | `src/domain/standards/data.ts` (`STANDARDS_PROVENANCE`, placeholder quarantine) |
 
 **Symptom.** Most of `data.ts` (materials, EN 1092 table, gasket m/y) lacks source citations. Fastener entries are partially annotated; `EN_25CrMo4` remains an explicit placeholder (`isPlaceholder`) still selectable in the catalog.
 
@@ -195,7 +193,7 @@ See [Testing and Quality](../development/testing-and-quality.md).
 
 **Resolution.**
 
-- `STANDARDS_PROVENANCE` (in `data.ts`) documents source/edition/notes for each table family: `materials` (EN 10028-2/-7, ASME SA-516/SA-240 — screening subset), `en1092` (EN 1092-1 — embedded DN/PN subset), `gaskets` (supplier-typical m/y screening heuristics), `fasteners` (per-entry `source`/`notes`, ISO 898-1 / ISO 3506-1 / ASME SA193).
+- `STANDARDS_PROVENANCE` (in `data.ts`, now `src/domain/standards/data.ts` — see B-10) documents source/edition/notes for each table family: `materials` (EN 10028-2/-7, ASME SA-516/SA-240 — screening subset), `en1092` (EN 1092-1 — embedded DN/PN subset), `gaskets` (supplier-typical m/y screening heuristics), `fasteners` (per-entry `source`/`notes`, ISO 898-1 / ISO 3506-1 / ASME SA193).
 - `EN_8.8`, `EN_10.9`, and `EN_A2-70` previously cited `source: 'Existing dataset'`; now cite the applicable standard (`ISO 898-1` / `ISO 3506-1`) with a `notes` line matching the pattern already used by `EN_5.6`/`EN_A4-70`. `EN_25CrMo4`'s `source` changed from `'TODO'` to `'Placeholder — not for design use'`.
 - `getFastenerOptions`/`getFastenerOptionsFor` now exclude `isPlaceholder: true` entries by default (quarantined from the default UI catalog) and accept an `includePlaceholders = false` parameter so calculation code (or a legacy config/history import) can still resolve a placeholder by id. `EN_25CrMo4` stays in `FASTENER_CATALOG` — `getFastenerCatalogEntry`/`resolveFastenerSelection` are unaffected and still resolve any id directly. `InputForm.tsx`'s grade dropdown keeps a currently-selected placeholder visible (so an imported legacy config doesn't show a blank/mismatched `<select>`) without adding it back to the general option list.
 
@@ -208,16 +206,25 @@ See [Testing and Quality](../development/testing-and-quality.md).
 | Field | Value |
 | --- | --- |
 | Priority | Low–Medium |
-| Status | Open |
+| Status | Resolved |
 | Area | Structure |
+| Resolved in | `apps/blind-flange-calculator/src/domain/` |
 
-**Symptom.** Domain modules do not import React (good), but they remain flat under `src/` mixed with export/CAD/history rather than a dedicated `src/domain/` package/folder. Bolt geometry tables live in `bolting.ts` while other standards live in `data.ts`.
+**Symptom.** Domain modules did not import React (good), but they remained flat under `src/` mixed with export/CAD/history rather than a dedicated `src/domain/` package/folder. Bolt geometry tables lived in `bolting.ts` while other standards lived in `data.ts`.
 
-**Follow-up.**
+**Resolution.**
 
-1. Move pure calculation + standards into `src/domain/` as in the migration plan.
-2. Keep CAD, export, and history at sibling boundaries.
-3. Align docs after the move.
+- Pure calculation and standards modules moved (via `git mv`) into `src/domain/`:
+  - `src/domain/calculations/{platePhysics,allowables,bolting,gasket,utils,custom,manualCheck}.ts`
+  - `src/domain/standards/data.ts`
+  - `src/domain/types/{bfTypes,manualCheckTypes}.ts`
+  - `src/domain/index.ts` re-exports the public API of the modules above.
+- All project-wide imports (components, state, cad, export, tests) updated to the new paths.
+- `bfTypes.ts` previously imported `ReactNode` from `react` only for the UI-only `ResultCardProps` prop type. That type moved to `src/uiTypes.ts` (sibling to `domain/`, outside it), so `src/domain/` no longer has any React or browser (download/CAD/history) dependency.
+- CAD, export, history, state, and components remain sibling folders to `domain/` (no imports flow the other way).
+- `pnpm typecheck:blind-flange` and `pnpm test:blind-flange` pass after the move.
+
+**Follow-up (optional).** Consider trimming `domain/index.ts`'s `export *` barrel to named exports if the domain surface grows large enough that accidental re-exports become a concern.
 
 ---
 
@@ -226,16 +233,21 @@ See [Testing and Quality](../development/testing-and-quality.md).
 | Field | Value |
 | --- | --- |
 | Priority | Low |
-| Status | Open |
+| Status | Mitigated |
 | Area | Quality / Ops |
+| Resolved in | `scripts/check-bundle-budget.mjs` + CI step after build |
 
 **Symptom.** No ESLint config, no dependency audit step, no WASM/bundle size budget check for Replicad/OpenCascade assets.
 
-**Follow-up.**
+**Resolution.**
 
-1. Add lint job.
-2. Track `static/.../assets` size for WASM regressions.
-3. Optional `pnpm audit` with documented exceptions.
+- Bundle/WASM size budget check: `pnpm check:bundle-budget` (fails CI if assets exceed ~15 MiB total or ~12 MiB largest WASM)
+- Wired into `.github/workflows/main.yml` after the production build
+
+**Still open (deferred).**
+
+- ESLint job — blocked by `typescript-eslint` peer range not yet supporting TypeScript 6.x used by this app
+- Soft `pnpm audit` gate with documented exceptions
 
 ---
 
@@ -243,12 +255,9 @@ See [Testing and Quality](../development/testing-and-quality.md).
 
 When capacity is limited, tackle remaining bottlenecks in this order:
 
-1. ~~**B-04** tests for existing formulas~~ (Mitigated — unit + CI done; component/Playwright deferred)
-2. ~~**B-01** shared plate physics~~ (Resolved)
-3. ~~**B-02** state boundary~~ (Resolved)
-4. ~~**B-03** shared PDF export module~~ (Resolved)
-5. ~~**B-05** CAD timeout/cancel~~ (Resolved) / **B-06** facing features
-6. ~~**B-07**~~ (Resolved) / ~~**B-08 / B-09** schema + standards provenance~~ (Resolved)
-7. **B-10 / B-11** structure and CI hygiene
+1. ~~**B-04** tests~~ (Mitigated — unit + CI done; component/Playwright → #12)
+2. ~~**B-01 … B-03, B-05, B-07 … B-10**~~ (Resolved)
+3. ~~**B-11** CI hygiene~~ (Mitigated — budget done; ESLint deferred)
+4. **B-06** facing features in STEP export
 
 Update this file when an item is mitigated or resolved. Cross-link resolved items from [Future Development Roadmap](../development/future-development-roadmap.md).

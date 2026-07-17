@@ -1,11 +1,11 @@
-import {getFastenerCatalogEntry, getFastenerEffectiveProps} from './data';
+import {getFastenerCatalogEntry, getFastenerEffectiveProps} from '../standards/data';
 import type {
   BoltTorqueInput,
   BoltTorqueResult,
   FastenerStandard,
   FastenerType,
   FrictionPreset,
-} from './bfTypes';
+} from '../types/bfTypes';
 
 // --- Bolt geometry & catalog ---
 export const BOLT_STRESS_AREA: Record<string, number> = {

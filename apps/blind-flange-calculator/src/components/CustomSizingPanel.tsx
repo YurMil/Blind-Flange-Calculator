@@ -8,12 +8,12 @@ import {
   getFastenerGradeLabel,
   type CustomPreference,
   type CustomSizingResult,
-} from '../custom';
-import {isFastenerPlaceholder, resolveFastenerSelection} from '../data';
+} from '../domain/calculations/custom';
+import {isFastenerPlaceholder, resolveFastenerSelection} from '../domain/standards/data';
 import FlangeVisualizer from './FlangeVisualizer';
 import ManualCheckPanel from './ManualCheckPanel';
-import type {CalculationInput, DesignConfiguration} from '../bfTypes';
-import type {ManualCheckResult, ManualMode} from '../manualCheckTypes';
+import type {CalculationInput, DesignConfiguration} from '../domain/types/bfTypes';
+import type {ManualCheckResult, ManualMode} from '../domain/types/manualCheckTypes';
 
 type Props = {
   input: CalculationInput;

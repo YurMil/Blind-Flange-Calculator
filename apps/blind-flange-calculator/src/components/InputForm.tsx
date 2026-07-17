@@ -11,8 +11,8 @@ import type {
   InputFormProps,
   MaterialId,
   TighteningMethod,
-} from '../bfTypes';
-import {GASKET_OPTIONS, getFastenerCatalogEntry, getFastenerOptionsFor, isFastenerPlaceholder} from '../data';
+} from '../domain/types/bfTypes';
+import {GASKET_OPTIONS, getFastenerCatalogEntry, getFastenerOptionsFor, isFastenerPlaceholder} from '../domain/standards/data';
 import CommittedNumberInput from './CommittedNumberInput';
 
 const inputClassName =

@@ -1,9 +1,9 @@
 import {useState} from 'react';
 import {FileDown, FileText, Loader2} from 'lucide-react';
 import {buildDxf, buildDxfFromManual, downloadTextFile, exportPdfReport} from '../exportUtils';
-import type {CalculationInput, CalculationResult, DesignConfiguration, GasketFacing} from '../bfTypes';
-import type {ManualCheckResult} from '../manualCheckTypes';
-import type {CustomSizingDebug} from '../custom';
+import type {CalculationInput, CalculationResult, DesignConfiguration, GasketFacing} from '../domain/types/bfTypes';
+import type {ManualCheckResult} from '../domain/types/manualCheckTypes';
+import type {CustomSizingDebug} from '../domain/calculations/custom';
 import StepExportPanel from './StepExportPanel';
 
 type Props = {

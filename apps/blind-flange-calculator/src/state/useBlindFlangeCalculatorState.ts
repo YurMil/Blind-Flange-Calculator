@@ -1,13 +1,13 @@
 import {useCallback, useEffect, useMemo, useState} from 'react';
-import {AVAILABLE_DNS, DEFAULT_FASTENER_ID, MATERIALS, getFastenerOptionsFor} from '../data';
-import {getHydroTestPressure} from '../allowables';
-import type {CustomSizingResult} from '../custom';
+import {AVAILABLE_DNS, DEFAULT_FASTENER_ID, MATERIALS, getFastenerOptionsFor} from '../domain/standards/data';
+import {getHydroTestPressure} from '../domain/calculations/allowables';
+import type {CustomSizingResult} from '../domain/calculations/custom';
 import {
   createLiveHistoryEntryId,
   saveHistoryEntry,
   type ConfigurationHistorySummary,
 } from '../history/configurationHistoryStore';
-import {calculateBlindFlange, findClosestStandardFromDims, getCalculatedPN, getMaxAvailablePN} from '../utils';
+import {calculateBlindFlange, findClosestStandardFromDims, getCalculatedPN, getMaxAvailablePN} from '../domain/calculations/utils';
 import type {
   FastenerGradeId,
   FastenerStandard,
@@ -19,8 +19,8 @@ import type {
   GeometryMode,
   MaterialId,
   TighteningMethod,
-} from '../bfTypes';
-import type {ManualCheckResult} from '../manualCheckTypes';
+} from '../domain/types/bfTypes';
+import type {ManualCheckResult} from '../domain/types/manualCheckTypes';
 import {createDefaultFlangeTag, migrateConfig, type BlindFlangeConfigurationFile} from './configurationFile';
 
 export const MAX_STANDARD_PN = 400;

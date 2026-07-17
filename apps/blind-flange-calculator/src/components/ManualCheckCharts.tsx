@@ -1,4 +1,4 @@
-import type {ManualBoltSummary, ManualThicknessSummary} from '../manualCheckTypes';
+import type {ManualBoltSummary, ManualThicknessSummary} from '../domain/types/manualCheckTypes';
 
 type Props = {
   boltSummary?: ManualBoltSummary;

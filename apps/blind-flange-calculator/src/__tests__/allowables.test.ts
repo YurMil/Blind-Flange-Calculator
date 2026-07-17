@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
-import {getAllowableStress, getHydroTestPressure} from '../allowables';
-import {MATERIALS} from '../data';
+import {getAllowableStress, getHydroTestPressure} from '../domain/calculations/allowables';
+import {MATERIALS} from '../domain/standards/data';
 
 describe('allowables', () => {
   it('selects nearest lower temperature yield bucket (no interpolation)', () => {

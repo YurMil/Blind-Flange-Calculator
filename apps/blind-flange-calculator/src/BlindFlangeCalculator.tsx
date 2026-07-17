@@ -5,7 +5,7 @@ import ResultsPanel from './components/ResultsPanel';
 import ExportActions from './components/ExportActions';
 import ConfigJsonActions from './components/ConfigJsonActions';
 import ConfigurationHistoryPanel from './components/ConfigurationHistoryPanel';
-import {AVAILABLE_DNS, MATERIALS} from './data';
+import {AVAILABLE_DNS, MATERIALS} from './domain/standards/data';
 import {MAX_STANDARD_PN, useBlindFlangeCalculatorState} from './state/useBlindFlangeCalculatorState';
 
 export default function BlindFlangeCalculator() {

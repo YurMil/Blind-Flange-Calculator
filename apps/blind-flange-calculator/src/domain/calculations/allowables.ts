@@ -1,5 +1,5 @@
-import {MATERIALS} from './data';
-import type {MaterialDefinition, MaterialId} from './bfTypes';
+import {MATERIALS} from '../standards/data';
+import type {MaterialDefinition, MaterialId} from '../types/bfTypes';
 
 export type DesignCode = 'EN' | 'ASME';
 export type AllowableUsage = 'operating' | 'test';

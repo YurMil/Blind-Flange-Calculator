@@ -38,18 +38,22 @@ Located under `apps/blind-flange-calculator/src/state/`.
 
 ## Domain and Standards Modules
 
+Physically isolated under `apps/blind-flange-calculator/src/domain/` — see [B-10](bottlenecks-and-risks.md#b-10--domain-layer-not-physically-isolated). This layer must not import React or any browser/download/CAD/history API; `src/domain/index.ts` re-exports the public API for consumers outside the layer.
+
 | File | Responsibility |
 | --- | --- |
-| `src/data.ts` | Materials, EN 1092-1 dimension table, gasket options, fastener catalog, standard thicknesses, `STANDARDS_PROVENANCE` (source/edition/notes per data family — see [B-09](bottlenecks-and-risks.md#b-09--weak-provenance-on-standards-tables)). `getFastenerOptions`/`getFastenerOptionsFor` exclude `isPlaceholder` entries (e.g. `EN_25CrMo4`) by default; pass `includePlaceholders: true` to resolve one by id. |
-| `src/bfTypes.ts` | Shared domain types for inputs/results |
-| `src/allowables.ts` | Allowable stress from yield/γ; hydrotest pressure helpers (EN / ASME style) |
-| `src/gasket.ts` | Standard and custom gasket effective diameter/width heuristics |
-| `src/bolting.ts` | Bolt stress area / hole / pitch tables; Wm1/Wm2 loads; area checks; torque (K-factor) |
-| `src/platePhysics.ts` | Shared circular-plate deflection/stress/thickness helpers (standard/custom/manual) |
-| `src/utils.ts` | Standard-mode `calculateBlindFlange`, PN selection, EN 1092 lookup, thickness/weight orchestration |
-| `src/custom.ts` | Custom auto-sizing search over bolt counts × sizes; failure diagnostics |
-| `src/manualCheck.ts` | Geometry validation and thickness/stress/deflection checks for user-defined dims |
-| `src/manualCheckTypes.ts` | Manual-check result types |
+| `src/domain/index.ts` | Barrel re-export of the domain layer's public API (types, standards data, calculations) |
+| `src/domain/standards/data.ts` | Materials, EN 1092-1 dimension table, gasket options, fastener catalog, standard thicknesses, `STANDARDS_PROVENANCE` (source/edition/notes per data family — see [B-09](bottlenecks-and-risks.md#b-09--weak-provenance-on-standards-tables)). `getFastenerOptions`/`getFastenerOptionsFor` exclude `isPlaceholder` entries (e.g. `EN_25CrMo4`) by default; pass `includePlaceholders: true` to resolve one by id. |
+| `src/domain/types/bfTypes.ts` | Shared domain types for inputs/results (framework-free; the UI-only `ResultCardProps` — which needs `ReactNode` — lives in `src/uiTypes.ts` instead) |
+| `src/domain/types/manualCheckTypes.ts` | Manual-check result types |
+| `src/domain/calculations/allowables.ts` | Allowable stress from yield/γ; hydrotest pressure helpers (EN / ASME style) |
+| `src/domain/calculations/gasket.ts` | Standard and custom gasket effective diameter/width heuristics |
+| `src/domain/calculations/bolting.ts` | Bolt stress area / hole / pitch tables; Wm1/Wm2 loads; area checks; torque (K-factor) |
+| `src/domain/calculations/platePhysics.ts` | Shared circular-plate deflection/stress/thickness helpers (standard/custom/manual) |
+| `src/domain/calculations/utils.ts` | Standard-mode `calculateBlindFlange`, PN selection, EN 1092 lookup, thickness/weight orchestration |
+| `src/domain/calculations/custom.ts` | Custom auto-sizing search over bolt counts × sizes; failure diagnostics |
+| `src/domain/calculations/manualCheck.ts` | Geometry validation and thickness/stress/deflection checks for user-defined dims |
+| `src/uiTypes.ts` | UI-only prop types that need React (currently `ResultCardProps`); sibling to `domain/`, not part of it |
 
 Units convention in domain code: **mm**, **bar** (inputs) / **MPa** (formulas), **N**, **N·mm**, **kg**.
 

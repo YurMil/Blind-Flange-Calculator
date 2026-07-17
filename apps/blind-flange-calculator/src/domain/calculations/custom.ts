@@ -6,7 +6,7 @@ import {
   getFastenerLabel,
   getMinStandardBoltCircle,
   isFastenerPlaceholder,
-} from './data';
+} from '../standards/data';
 import {getAllowableStress, getHydroTestPressure} from './allowables';
 import {
   calcRequiredBoltLoads,
@@ -35,7 +35,7 @@ import type {
   GasketFacing,
   GasketMaterial,
   CustomSizingDebug,
-} from './bfTypes';
+} from '../types/bfTypes';
 
 export type CustomPreference = 'min_weight' | 'min_bolts';
 export type {CustomSizingDebug, CustomSizingResult};

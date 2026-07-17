@@ -1,5 +1,5 @@
-import {GASKET_OPTIONS} from './data';
-import type {GasketFacing, GasketMaterial} from './bfTypes';
+import {GASKET_OPTIONS} from '../standards/data';
+import type {GasketFacing, GasketMaterial} from '../types/bfTypes';
 
 export type GasketGeometry = {
   effectiveDiameter: number;

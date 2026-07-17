@@ -1,6 +1,6 @@
-import {getFastenerCatalogEntry} from '../../data';
-import type {CalculationInput, CalculationResult} from '../../bfTypes';
-import type {CustomSizingDebug} from '../../custom';
+import {getFastenerCatalogEntry} from '../../domain/standards/data';
+import type {CalculationInput, CalculationResult} from '../../domain/types/bfTypes';
+import type {CustomSizingDebug} from '../../domain/calculations/custom';
 import {createPdfDoc} from './pdfDoc';
 import {toFixed, drawSectionHeader, drawField} from './pdfPrimitives';
 import {sanitizePdfText} from './pdfText';

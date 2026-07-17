@@ -1,4 +1,3 @@
-import type {ReactNode} from 'react';
 import type {ManualCheckResult} from './manualCheckTypes';
 
 export type MaterialId =
@@ -198,15 +197,6 @@ export interface ResultsPanelProps {
   onCustomResultChange?: (value: CustomSizingResult | null) => void;
   onManualResultChange?: (value: ManualCheckResult | null) => void;
   onDesignConfigChange?: (value: DesignConfiguration, isUser?: boolean) => void;
-}
-
-export interface ResultCardProps {
-  icon: ReactNode;
-  label: string;
-  value: string;
-  unit?: string;
-  subtext?: string;
-  highlight?: boolean;
 }
 
 export interface CustomSizingDebug {
