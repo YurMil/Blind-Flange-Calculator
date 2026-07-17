@@ -55,6 +55,12 @@ jobs:
       - name: Build utility app
         run: pnpm build:blind-flange
 
+      - name: Install Playwright Chromium
+        run: corepack pnpm --dir apps/blind-flange-calculator exec playwright install --with-deps chromium
+
+      - name: Playwright smoke tests
+        run: pnpm test:e2e:blind-flange
+
       - name: Check static asset budgets
         run: pnpm check:bundle-budget
 

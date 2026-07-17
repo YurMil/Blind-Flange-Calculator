@@ -6,3 +6,6 @@ apps/*/dist/
 *.local
 *.log
 .playwright-cli/
+**/test-results/
+**/playwright-report/
+**/blob-report/

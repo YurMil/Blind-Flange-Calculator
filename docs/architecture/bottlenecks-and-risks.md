@@ -73,25 +73,21 @@ Priority is relative engineering risk, not a delivery commitment.
 | Field | Value |
 | --- | --- |
 | Priority | High |
-| Status | Mitigated |
+| Status | Resolved |
 | Area | Quality |
-| Resolved in | Vitest unit suite + CI `pnpm test:blind-flange` gate |
+| Resolved in | Vitest unit + component tests; Playwright smoke; CI gates |
 
 **Symptom.** CI previously ran TypeScript check + production build + artifact shape validation only.
 
 **Resolution.**
 
-- Vitest configured via `apps/blind-flange-calculator/vitest.config.ts`
-- Domain unit tests: plate physics, allowables, PN/bolting/standard calc, CAD validation
-- Root script `pnpm test:blind-flange` / `pnpm test`
-- CI quality job runs unit tests before build
+- Vitest domain unit tests
+- `@testing-library/react` component tests (InputForm, ExportActions, CommittedNumberInput)
+- Playwright smoke against built `app.html` (load → export controls → custom mode)
+- CI runs unit/component tests before build and Playwright after build
 
-**Still open (deferred).**
+**Follow-up (optional).** Broader component coverage and multi-browser Playwright matrix.
 
-- Component tests (`@testing-library/react`)
-- Playwright browser smoke (load → calculate → export)
-
-See [Testing and Quality](../development/testing-and-quality.md).
 ---
 
 ## B-05 — CAD worker lacks timeout / cancel hardening
@@ -257,8 +253,10 @@ See [Testing and Quality](../development/testing-and-quality.md).
 
 When capacity is limited, tackle remaining bottlenecks in this order:
 
-1. ~~**B-04** tests~~ (Mitigated — unit + CI done; component/Playwright → #12)
+1. ~~**B-04** tests~~ (Resolved — unit + component + Playwright)
 2. ~~**B-01 … B-11**~~ (Resolved / Mitigated)
-3. Remaining open follow-up: component + Playwright tests (#12)
+
+All tracked bottleneck issues from the original inventory are closed. Optional follow-ups remain inside each Resolved/Mitigated entry.
 
 Update this file when an item is mitigated or resolved. Cross-link resolved items from [Future Development Roadmap](../development/future-development-roadmap.md).
+

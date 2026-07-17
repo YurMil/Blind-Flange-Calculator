@@ -35,6 +35,14 @@ Run unit tests:
 corepack pnpm test:blind-flange
 ```
 
+Run Playwright smoke (requires a prior build):
+
+```bash
+corepack pnpm build:blind-flange
+corepack pnpm --dir apps/blind-flange-calculator exec playwright install chromium
+corepack pnpm test:e2e:blind-flange
+```
+
 Build the deployable static app:
 
 ```bash
