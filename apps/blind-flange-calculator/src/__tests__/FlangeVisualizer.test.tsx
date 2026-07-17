@@ -31,8 +31,10 @@ describe('FlangeVisualizer', () => {
     expect(screen.getByText('Bolt circle')).toBeInTheDocument();
     expect(screen.getByText('Bolt holes')).toBeInTheDocument();
 
-    expect(screen.getByText('D 220')).toBeInTheDocument();
-    expect(screen.getByText('K 180')).toBeInTheDocument();
+    expect(screen.getByText('ØD 220')).toBeInTheDocument();
+    expect(screen.getByText('K (BCD) 180')).toBeInTheDocument();
+    expect(screen.getByText('d2')).toBeInTheDocument();
+    expect(screen.getByText('G')).toBeInTheDocument();
     expect(screen.getByRole('img', {name: /Side view thickness 8 mm/i})).toBeInTheDocument();
     expect(screen.getByText('220 mm')).toBeInTheDocument();
     expect(container.querySelector('svg[width="320"]')).toBeNull();

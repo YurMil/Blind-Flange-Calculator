@@ -93,7 +93,7 @@ src/cad/hooks/useBlindFlangeCad.ts            React hook (warmup + generate)
 
 Geometry source priority: manual check input → design config → custom result → standard result.
 
-STEP solid: disk + optional RF boss or RTJ groove + through bolt holes. Facing dimensions use screening heuristics (not a full B16.5 RTJ table).
+STEP solid: disk + optional RF boss or RTJ groove + through bolt holes. CAD coordinates and STEP file units are explicitly millimetres. The first bolt is offset by half a bolt pitch so primary centre lines run between holes for the common even-count patterns. Facing dimensions use screening heuristics (not a full B16.5 RTJ table).
 
 ## Export and Reporting
 

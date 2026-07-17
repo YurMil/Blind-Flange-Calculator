@@ -114,7 +114,14 @@ ctx.onmessage = async (event: MessageEvent<BlindFlangeWorkerRequest>) => {
     post({type: 'progress', requestId, stage: 'geometry', done: 3, total: 3});
 
     post({type: 'progress', requestId, stage: 'export', done: 0, total: 1});
-    const blob = solid.blobSTEP();
+    // The calculator and CAD kernel both use millimetres. `blobSTEP()` omits
+    // an explicit unit declaration, so downstream CAD systems may interpret
+    // the numeric dimensions as metres. Use Replicad's assembly exporter to
+    // write both the model and file units as millimetres.
+    const blob = replicadModule.exportSTEP(
+      [{shape: solid, name: 'Blind flange'}],
+      {modelUnit: 'MM', unit: 'MM'},
+    );
     const buffer = await blob.arrayBuffer();
     post({type: 'progress', requestId, stage: 'export', done: 1, total: 1});
 
