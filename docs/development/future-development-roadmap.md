@@ -2,6 +2,8 @@
 
 This roadmap lists recommended improvements for long-term development. It is intentionally technical and focused on maintainability.
 
+Detailed bottleneck inventory (IDs **B-01** … **B-11**): [Bottlenecks and Risks](../architecture/bottlenecks-and-risks.md). Prefer updating that file when closing an item; keep this roadmap as the prioritized narrative.
+
 ## 1. Domain Layer Consolidation
 
 Move calculation and standards code into a dedicated domain folder:
@@ -87,7 +89,19 @@ Goals:
 
 ## 6. Documentation Expansion
 
-Recommended future documents:
+Already added as a living baseline:
+
+```text
+docs/README.md
+docs/product/overview.md
+docs/algorithms/worked-examples.md
+docs/architecture/README.md
+docs/architecture/codebase-map.md
+docs/architecture/bottlenecks-and-risks.md
+README.md
+```
+
+Recommended next documents:
 
 ```text
 docs/adr/
@@ -96,20 +110,17 @@ docs/releases/
 docs/testing/
 ```
 
-High-value documents:
+High-value additions still missing:
 
-- Calculation assumptions.
-- Supported standards and limitations.
-- CAD export assumptions.
-- Release notes.
-- Architecture Decision Records.
+- Architecture Decision Records for major refactors (B-01, B-02, CAD facing).
+- Release notes / changelog discipline.
+- Dedicated standards provenance appendix once `data.ts` citations are filled in.
 
 ## 7. Conventional Repository Files
 
-Add these when the project has multiple contributors or public usage:
+`README.md` is now the primary entry point. Still useful for multi-contributor hygiene:
 
 ```text
-README.md
 CONTRIBUTING.md
 CHANGELOG.md
 SECURITY.md
@@ -117,7 +128,6 @@ CODEOWNERS
 .editorconfig
 .env.example
 ```
-
 ## 8. Release Artifacts
 
 Future releases should include:

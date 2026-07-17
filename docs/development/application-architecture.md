@@ -180,6 +180,15 @@ Best practice:
 - Avoid loading heavy PDF/CAD dependencies until the user needs export actions when practical.
 - Keep generated static assets cache-friendly through hashed filenames.
 
+## Known Bottlenecks
+
+Current structural risks (triplicated plate physics, oversized container state, duplicated PDF engines, missing tests, CAD MVP limits, and more) are tracked with priorities and follow-ups in:
+
+- [Bottlenecks and Risks](../architecture/bottlenecks-and-risks.md)
+- [Codebase Map](../architecture/codebase-map.md)
+
+Update that inventory when a bottleneck is mitigated or resolved.
+
 ## Architecture Review Checklist
 
 Before merging an architectural change, verify:
@@ -190,3 +199,4 @@ Before merging an architectural change, verify:
 - Export code reuses calculated results instead of recalculating silently.
 - New dependencies are justified and documented.
 - CI still validates the static artifact.
+- [Bottlenecks and Risks](../architecture/bottlenecks-and-risks.md) is updated if the change opens, mitigates, or closes an item.

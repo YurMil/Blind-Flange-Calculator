@@ -2,12 +2,18 @@
 
 This folder contains the operational documentation for developing and maintaining the Blind Flange Calculator as a standalone Vite/React utility app.
 
+Master documentation index (product, algorithms, architecture, ops): [docs/README.md](../README.md).
+
 ## Documents
 
 - [Project Structure](project-structure.md) explains the current repository layout and the responsibility of each major folder.
 - [Standard Files and Best Practices](standard-files.md) describes the standard files this type of application should keep and how to maintain them.
 - [Application Architecture](application-architecture.md) defines the intended internal architecture for UI, domain logic, CAD, exports, and persistence.
+- [Codebase Map](../architecture/codebase-map.md) maps modules and responsibilities across the app.
+- [Bottlenecks and Risks](../architecture/bottlenecks-and-risks.md) tracks architectural narrow points and follow-up work.
 - [Mathematical Model](mathematical-model.md) documents the implemented calculation formulas, assumptions, units, and limitations.
+- [Worked Calculation Examples](../algorithms/worked-examples.md) provides numeric walkthroughs of key algorithms.
+- [Product Overview](../product/overview.md) describes the problems the application solves.
 - [Development Workflow](development-workflow.md) documents local setup, common commands, branch discipline, and change flow.
 - [Testing and Quality Strategy](testing-and-quality.md) defines the expected quality gates and recommended future test layers.
 - [CI/CD and Deployment](ci-cd-and-deployment.md) explains the GitHub Actions workflow and static app publication model.

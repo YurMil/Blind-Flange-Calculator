@@ -4,19 +4,20 @@ This document describes the standard files expected in a maintainable standalone
 
 ## Required Repository Files
 
-### `Readm.md`
+### `README.md`
 
-Root project entry point with links to developer documentation and common commands.
+Root project entry point: product value, algorithm overview with examples, technology summary, and links into `docs/`.
 
 Best practice:
 
-- Keep it short.
-- Link to detailed documents instead of duplicating them.
-- Include the exact commands needed for development, typechecking, and build.
+- Keep the README scannable; put deep detail in `docs/`.
+- Link to [docs/README.md](../README.md) as the documentation hub.
+- Include exact commands for install, development, typechecking, and build.
+- Separate confirmed behavior from roadmap items.
 
-Recommended future improvement:
+### `Readm.md`
 
-- Add `README.md` as the conventional GitHub entry point if external contributors will use the repository. `Readm.md` exists because it was explicitly requested for this repository.
+Legacy filename kept as a short redirect to `README.md` for older bookmarks and links.
 
 ### `.gitignore`
 

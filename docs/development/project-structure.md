@@ -9,10 +9,11 @@ package.json
 pnpm-lock.yaml
 pnpm-workspace.yaml
 .gitignore
-Readm.md
+README.md
+Readm.md                      legacy pointer to README.md
 .github/workflows/main.yml
+docs/                         product, architecture, algorithms, development docs
 ```
-
 ### `package.json`
 
 Defines the workspace-level scripts and the expected package manager:
