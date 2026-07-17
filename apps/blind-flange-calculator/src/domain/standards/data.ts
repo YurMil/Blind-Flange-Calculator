@@ -597,6 +597,7 @@ export const GASKET_OPTIONS = {
   facings: [
     {value: 'RF', label: 'Raised face (RF)'},
     {value: 'FF', label: 'Flat face (FF)'},
+    {value: 'RTJ', label: 'Ring-type joint (RTJ)'},
     {value: 'IBC', label: 'Integral bore contact (IBC)'},
   ],
 } as const;

@@ -106,6 +106,7 @@ export default function ExportActions({
             customResult: stepCustomResult ?? null,
             designConfig: designConfig ?? null,
             gasketFacing,
+            pressureClassHint: targetPN,
           }}
           input={input}
           targetPN={targetPN}

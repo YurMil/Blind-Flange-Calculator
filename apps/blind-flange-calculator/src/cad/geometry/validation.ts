@@ -52,6 +52,46 @@ export const validateBlindFlangeCadGeometry = (geometry: BlindFlangeCadGeometry)
     }
   }
 
+  const facingType = geometry.facingType ?? 'FF';
+
+  if (facingType === 'RF') {
+    const rfDiameter = geometry.raisedFaceDiameter ?? 0;
+    const rfHeight = geometry.raisedFaceHeight ?? 0;
+    if (rfDiameter <= 0) {
+      errors.push('Raised face diameter must be greater than 0 for RF facing.');
+    }
+    if (rfHeight <= 0) {
+      errors.push('Raised face height must be greater than 0 for RF facing.');
+    }
+    if (rfDiameter >= geometry.boltCircleDiameter - geometry.boltHoleDiameter) {
+      errors.push('Raised face diameter must stay inside the bolt hole pattern.');
+    }
+    if (rfDiameter >= geometry.outerDiameter) {
+      errors.push('Raised face diameter must be smaller than the flange outer diameter.');
+    }
+  }
+
+  if (facingType === 'RTJ') {
+    const pitch = geometry.rtjPitchDiameter ?? 0;
+    const width = geometry.rtjGrooveWidth ?? 0;
+    const depth = geometry.rtjGrooveDepth ?? 0;
+    if (pitch <= 0 || width <= 0 || depth <= 0) {
+      errors.push('RTJ groove pitch, width, and depth must all be greater than 0.');
+    } else {
+      const outerGroove = pitch / 2 + width / 2;
+      const innerGroove = pitch / 2 - width / 2;
+      if (innerGroove <= 0) {
+        errors.push('RTJ groove inner radius must stay positive.');
+      }
+      if (outerGroove * 2 >= geometry.boltCircleDiameter - geometry.boltHoleDiameter) {
+        errors.push('RTJ groove must stay inside the bolt hole pattern.');
+      }
+      if (depth >= geometry.thickness) {
+        errors.push('RTJ groove depth must be smaller than the flange thickness.');
+      }
+    }
+  }
+
   return errors;
 };
 

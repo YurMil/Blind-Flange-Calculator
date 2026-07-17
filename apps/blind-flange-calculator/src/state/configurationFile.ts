@@ -124,7 +124,7 @@ const migrateParametersV1 = (params: Record<string, unknown>): BlindFlangeConfig
     DEFAULT_PARAMETERS.gasketMaterial,
   ),
   gasketThickness: requiredNumber(params.gasketThickness, DEFAULT_PARAMETERS.gasketThickness),
-  gasketFacing: requiredString(params.gasketFacing, ['RF', 'FF', 'IBC'] as const, DEFAULT_PARAMETERS.gasketFacing),
+  gasketFacing: requiredString(params.gasketFacing, ['RF', 'FF', 'IBC', 'RTJ'] as const, DEFAULT_PARAMETERS.gasketFacing),
   frictionPreset: requiredString(params.frictionPreset, ['dry', 'lubricated'] as const, DEFAULT_PARAMETERS.frictionPreset),
   tighteningMethod: requiredString(
     params.tighteningMethod,

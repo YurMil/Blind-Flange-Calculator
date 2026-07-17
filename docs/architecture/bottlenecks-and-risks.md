@@ -112,8 +112,6 @@ See [Testing and Quality](../development/testing-and-quality.md).
 - `AbortSignal` support; abort terminates and recreates the worker
 - UI Cancel control while generating STEP
 
-**Still open.** Facing features remain MVP stubs — see **B-06**.
-
 ---
 
 ## B-06 — Facing features not modeled in STEP
@@ -121,18 +119,22 @@ See [Testing and Quality](../development/testing-and-quality.md).
 | Field | Value |
 | --- | --- |
 | Priority | Medium |
-| Status | Open (intentional MVP stub) |
+| Status | Resolved |
 | Area | CAD |
+| Resolved in | `build-facing-features.ts`, `deriveFacingParameters.ts`, RF/RTJ validation |
 
-**Symptom.** `build-facing-features.ts` is a passthrough. Exported solids are flat disks with bolt holes regardless of RF/FF/IBC selection.
+**Symptom.** `build-facing-features.ts` was a passthrough stub. Exported solids were flat disks with bolt holes regardless of RF/FF/IBC selection.
 
-**Why it matters.** Users may assume STEP geometry reflects facing. Downstream manufacturing use of the file can be wrong if facing is required.
+**Resolution.**
 
-**Follow-up.**
+- `RF`: fused raised-face cylinder (height 1.6 mm / 6.4 mm from PN heuristic; diameter from gasket OD when available)
+- `RTJ`: rectangular-section annular groove cut (pitch/width/depth screening heuristics); `RTJ` added to gasket facing UI/options
+- `FF`: flat; `IBC`: exported as `CUSTOM` flat seating
+- Solid pipeline: disk → facing features → bolt holes
+- Validation covers RF/RTJ envelope vs bolt pattern and thickness
+- Unit tests in `facingFeatures.test.ts`; STEP panel notes describe modeled features and screening limits
 
-1. Implement raised-face and RTJ groove solids per the STEP plan.
-2. Keep UI warnings until features are complete.
-3. Add geometry validation fixtures for facing envelopes.
+**Note.** RTJ groove is a CAD screening approximation, not a full ASME B16.5 ring-groove table lookup.
 
 ---
 
@@ -256,8 +258,7 @@ See [Testing and Quality](../development/testing-and-quality.md).
 When capacity is limited, tackle remaining bottlenecks in this order:
 
 1. ~~**B-04** tests~~ (Mitigated — unit + CI done; component/Playwright → #12)
-2. ~~**B-01 … B-03, B-05, B-07 … B-10**~~ (Resolved)
-3. ~~**B-11** CI hygiene~~ (Mitigated — budget done; ESLint deferred)
-4. **B-06** facing features in STEP export
+2. ~~**B-01 … B-11**~~ (Resolved / Mitigated)
+3. Remaining open follow-up: component + Playwright tests (#12)
 
 Update this file when an item is mitigated or resolved. Cross-link resolved items from [Future Development Roadmap](../development/future-development-roadmap.md).

@@ -13,8 +13,16 @@ export type BlindFlangeCadGeometry = {
   gasketId?: number;
   gasketOd?: number;
   facingType?: BlindFlangeFacingType;
+  /** Screening PN / pressure-class hint used for RF height selection. */
+  pressureClassHint?: number;
   raisedFaceHeight?: number;
   raisedFaceDiameter?: number;
+  /** RTJ groove pitch diameter (centerline of ring groove), mm. */
+  rtjPitchDiameter?: number;
+  /** RTJ rectangular groove width approximation, mm. */
+  rtjGrooveWidth?: number;
+  /** RTJ rectangular groove depth approximation, mm. */
+  rtjGrooveDepth?: number;
   source: 'manual' | 'design' | 'custom' | 'standard';
 };
 
@@ -24,6 +32,8 @@ export type BlindFlangeCadSource = {
   customResult?: CalculationResult | null;
   designConfig?: DesignConfiguration | null;
   gasketFacing?: GasketFacing;
+  /** Optional PN / class hint when not available from a calculation result. */
+  pressureClassHint?: number;
 };
 
 export type BoltHoleCenter = {

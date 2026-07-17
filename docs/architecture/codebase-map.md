@@ -83,7 +83,8 @@ src/cad/geometry/compute-flange-geometry.ts   normalize calculator state -> CAD 
 src/cad/geometry/validation.ts                pre-WASM geometry checks
 src/cad/geometry/build-bolt-hole-pattern.ts
 src/cad/geometry/build-blind-flange-solid.ts  disk minus bolt holes (Replicad)
-src/cad/geometry/build-facing-features.ts     MVP stub (passthrough)
+src/cad/geometry/build-facing-features.ts     RF fuse + RTJ groove cut
+src/cad/geometry/deriveFacingParameters.ts    RF/RTJ screening dimension derivation
 src/cad/services/cad-worker-protocol.ts       typed worker messages
 src/cad/services/cad-worker.ts                WASM load + STEP blob
 src/cad/services/cad-worker-client.ts         main-thread Promise API (timeout, AbortSignal cancel, CadWorkerError)

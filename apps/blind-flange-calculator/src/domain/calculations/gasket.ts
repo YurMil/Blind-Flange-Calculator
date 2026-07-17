@@ -25,7 +25,7 @@ export function getGasketGeometry(
   const mProps = GASKET_OPTIONS.materials[material] ?? GASKET_OPTIONS.materials.graphite;
 
   const pnFactor = pn >= 320 ? 1.15 : pn >= 250 ? 1.1 : pn >= 160 ? 1.05 : 1;
-  const facingFactor = facing === 'FF' ? 1.1 : facing === 'IBC' ? 0.95 : 1;
+  const facingFactor = facing === 'FF' ? 1.1 : facing === 'IBC' ? 0.95 : facing === 'RTJ' ? 0.9 : 1;
   const thicknessFactor = thickness >= 3 ? 1.08 : 1;
 
   const rawWidth = dn * 0.08 + 6;

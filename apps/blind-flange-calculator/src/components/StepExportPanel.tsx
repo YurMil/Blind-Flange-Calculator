@@ -116,7 +116,23 @@ export default function StepExportPanel({source, input, targetPN}: Props) {
       return successText;
     }
 
-    return 'Exports the current blind flange as a 3D STEP model with the base disk and bolt-hole pattern.';
+    return 'Exports the current blind flange as a 3D STEP model (disk, facing features, bolt-hole pattern).';
+  })();
+
+  const facingNote = (() => {
+    if (!source.gasketFacing || source.gasketFacing === 'FF') {
+      return null;
+    }
+    if (source.gasketFacing === 'RF') {
+      return 'RF export includes a raised-face boss. Height uses a screening PN heuristic (1.6 mm / 6.4 mm); diameter follows gasket OD when available.';
+    }
+    if (source.gasketFacing === 'RTJ') {
+      return 'RTJ export cuts a rectangular-section ring groove (screening approximation of pitch/width/depth — not a certified ASME B16.5 groove table).';
+    }
+    if (source.gasketFacing === 'IBC') {
+      return 'IBC is exported as a flat seating face (CUSTOM). No raised boss or ring groove is added.';
+    }
+    return null;
   })();
 
   return (
@@ -158,11 +174,7 @@ export default function StepExportPanel({source, input, targetPN}: Props) {
         <div className="mt-3 text-xs text-amber-200">{errorText ?? workerError}</div>
       ) : null}
 
-      {source.gasketFacing && source.gasketFacing !== 'FF' ? (
-        <div className="mt-2 text-xs text-slate-500">
-          Facing type is tracked, but the current STEP MVP exports the base flange body without RF / groove features.
-        </div>
-      ) : null}
+      {facingNote ? <div className="mt-2 text-xs text-slate-500">{facingNote}</div> : null}
     </div>
   );
 }

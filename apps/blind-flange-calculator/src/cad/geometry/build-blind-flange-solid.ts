@@ -28,10 +28,15 @@ export const buildBlindFlangeSolid = (
   }
 
   const outerRadius = geometry.outerDiameter / 2;
-  const holeRadius = geometry.boltHoleDiameter / 2;
   let solid = makeCylinder(outerRadius, geometry.thickness, [0, 0, 0], [0, 0, 1]);
+
+  // Facing features first (raised face / RTJ groove), then through bolt holes.
+  solid = buildFacingFeatures(replicadModule, solid, geometry);
+
   const holeCenters = buildBoltHolePattern(geometry);
-  const holeDepth = geometry.thickness + 2;
+  const holeRadius = geometry.boltHoleDiameter / 2;
+  const faceExtra = geometry.facingType === 'RF' ? (geometry.raisedFaceHeight ?? 0) : 0;
+  const holeDepth = geometry.thickness + faceExtra + 2;
   const holeOffset = -1;
   const holeSolids = holeCenters.map((center) =>
     makeCylinder(holeRadius, holeDepth, [center.x, center.y, holeOffset], [0, 0, 1]),
@@ -53,6 +58,5 @@ export const buildBlindFlangeSolid = (
     }
   }
 
-  const featuredSolid = buildFacingFeatures(solid, geometry);
-  return typeof featuredSolid.simplify === 'function' ? featuredSolid.simplify() : featuredSolid;
+  return typeof solid.simplify === 'function' ? solid.simplify() : solid;
 };

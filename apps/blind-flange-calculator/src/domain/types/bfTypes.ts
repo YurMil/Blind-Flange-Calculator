@@ -17,7 +17,7 @@ export type MaterialId =
   | 'SA240-304L'
   | 'SA240-316L';
 export type GasketMaterial = 'graphite' | 'tesnitBA50' | 'ptfe';
-export type GasketFacing = 'RF' | 'FF' | 'IBC';
+export type GasketFacing = 'RF' | 'FF' | 'IBC' | 'RTJ';
 export type FrictionPreset = 'dry' | 'lubricated';
 export type TighteningMethod = 'k_factor' | 'detailed';
 export type BoltGrade = '8.8' | '10.9' | 'A2-70';
