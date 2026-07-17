@@ -35,6 +35,8 @@ describe('FlangeVisualizer', () => {
     expect(screen.getByText('K (BCD) 180')).toBeInTheDocument();
     expect(screen.getByText('d2')).toBeInTheDocument();
     expect(screen.getByText('G')).toBeInTheDocument();
+    expect(screen.getByText('Hole diameter d2')).toBeInTheDocument();
+    expect(screen.getByText('18 mm')).toBeInTheDocument();
     expect(screen.getByRole('img', {name: /Side view thickness 8 mm/i})).toBeInTheDocument();
     expect(screen.getByText('220 mm')).toBeInTheDocument();
     expect(container.querySelector('svg[width="320"]')).toBeNull();
