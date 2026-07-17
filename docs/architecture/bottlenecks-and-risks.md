@@ -39,18 +39,15 @@ Priority is relative engineering risk, not a delivery commitment.
 | Field | Value |
 | --- | --- |
 | Priority | High |
-| Status | Open |
+| Status | Resolved |
 | Area | UI / State |
+| Resolved in | `src/state/useBlindFlangeCalculatorState.ts` |
 
-**Symptom.** `BlindFlangeCalculator.tsx` owns a large set of `useState` hooks and interdependent `useEffect` chains (PN forcing, hydrotest auto-pressure, custom DN matching, design-config sync, debounced history autosave).
+**Symptom.** `BlindFlangeCalculator.tsx` owned a large set of `useState` hooks and interdependent `useEffect` chains (PN forcing, hydrotest auto-pressure, custom DN matching, design-config sync, debounced history autosave).
 
-**Why it matters.** Hard to reason about, easy to introduce subtle state bugs when adding panels or export modes, difficult to unit-test without mounting the whole tree.
+**Resolution.** All orchestration state, derived memos, and event handlers moved into the `useBlindFlangeCalculatorState()` hook in `src/state/useBlindFlangeCalculatorState.ts`. `BlindFlangeCalculator.tsx` now only calls the hook and renders JSX (header, `InputForm`, `ResultsPanel`, `ExportActions`, dialogs), reading everything it needs off the hook's return object. Configuration-file parsing/import helpers and shared types live in `src/state/configurationFile.ts` and are reused by the hook. `MAX_STANDARD_PN` is exported from the state module for the UI.
 
-**Follow-up.**
-
-1. Introduce a focused state boundary (`src/state/`) for inputs, derived results, UI flags, and history.
-2. Keep derived engineering values as pure domain calls / selectors.
-3. Leave presentational components free of orchestration effects.
+**Follow-up (optional).** Split the hook further (e.g. a dedicated history-autosave hook) if it grows again.
 
 ---
 
@@ -241,7 +238,7 @@ When capacity is limited, tackle remaining bottlenecks in this order:
 
 1. ~~**B-04** tests for existing formulas~~ (Mitigated — unit + CI done; component/Playwright deferred)
 2. ~~**B-01** shared plate physics~~ (Resolved)
-3. **B-02** state boundary (reduces UI coupling)
+3. ~~**B-02** state boundary~~ (Resolved)
 4. **B-03** shared PDF export module
 5. **B-05 / B-06** CAD hardening and facing features
 6. ~~**B-07**~~ (Resolved) / **B-08 / B-09** schema + standards provenance

@@ -21,10 +21,20 @@ apps/blind-flange-calculator/index.html
   -> src/main.tsx          StrictMode bootstrap, styles
   -> src/App.tsx           Thin wrapper
   -> src/BlindFlangeCalculator.tsx
-       owns calculator state, derives results, wires panels
+       presentational shell: renders header, InputForm, ResultsPanel,
+       ExportActions, and dialogs from src/state/useBlindFlangeCalculatorState.ts
 ```
 
-`BlindFlangeCalculator.tsx` is the application container: input state, standard/custom/manual calculation orchestration, configuration JSON schema, and IndexedDB autosave.
+`BlindFlangeCalculator.tsx` is a thin presentational container. All orchestration state — input state, standard/custom/manual calculation orchestration, configuration JSON schema, and IndexedDB autosave — lives in `src/state/`.
+
+## State Layer
+
+Located under `apps/blind-flange-calculator/src/state/`.
+
+| File | Responsibility |
+| --- | --- |
+| `useBlindFlangeCalculatorState.ts` | Owns all `useState`/`useEffect`/`useMemo`/`useCallback` orchestration (inputs, derived results, PN forcing, hydrotest auto-pressure, custom DN matching, design-config sync, debounced history autosave, import/export handlers). Exposes a single hook consumed by `BlindFlangeCalculator.tsx`. Also exports `MAX_STANDARD_PN`. |
+| `configurationFile.ts` | `BlindFlangeConfigurationFile` schema type, JSON-import parsing/validation helpers (`isRecord`, `optionalNumber`, `requiredNumber`, `requiredString`, `parseDesignConfig`, `resolveImportedDn`), `createDefaultFlangeTag`, and `MATERIAL_IDS`. |
 
 ## Domain and Standards Modules
 
