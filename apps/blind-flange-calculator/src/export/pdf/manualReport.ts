@@ -10,6 +10,7 @@ import type {ManualCheckResult} from '../../domain/types/manualCheckTypes';
 import {createPdfDoc} from './pdfDoc';
 import {toFixed, fmt, drawSectionHeader, drawField, drawWrapped, drawBar, drawKeyValueRows} from './pdfPrimitives';
 import {sanitizePdfText} from './pdfText';
+import {boltHoleAngleAt} from '../../cad/geometry/build-bolt-hole-pattern';
 
 export interface ManualReportParams {
   input: CalculationInput;
@@ -181,16 +182,52 @@ export async function renderManualReport(params: ManualReportParams): Promise<Bl
       if (dashed) doc.setLineDashPattern([], 0);
     };
 
+    const drawLeader = (x1: number, y1: number, x2: number, y2: number, label: string) => {
+      doc.setDrawColor(110);
+      doc.setLineWidth(0.25);
+      doc.line(x1, y1, x2, y2);
+      doc.setFontSize(9);
+      doc.setTextColor(80);
+      doc.text(sanitizePdfText(label), x2 + 2, y2 - 1);
+    };
+
     // Front view
+    doc.setDrawColor(130);
+    doc.setLineWidth(0.2);
+    doc.setLineDashPattern([4, 2], 0);
+    doc.line(centerX - rOD * scale - 8, centerY, centerX + rOD * scale + 8, centerY);
+    doc.line(centerX, centerY - rOD * scale - 8, centerX, centerY + rOD * scale + 8);
+    doc.setLineDashPattern([], 0);
+    doc.setDrawColor(0);
     drawCircle(centerX, centerY, rOD);
     drawCircle(centerX, centerY, rBolt, true);
     drawCircle(centerX, centerY, rGasket, true);
     for (let i = 0; i < dims.bolts; i++) {
-      const a = (2 * Math.PI * i) / dims.bolts;
+      const a = boltHoleAngleAt(i, dims.bolts);
       const hx = centerX + rBolt * scale * Math.cos(a);
       const hy = centerY + rBolt * scale * Math.sin(a);
       doc.circle(hx, hy, rHole * scale, 'S');
     }
+
+    const firstBoltAngle = boltHoleAngleAt(0, dims.bolts);
+    const firstBoltX = centerX + rBolt * scale * Math.cos(firstBoltAngle);
+    const firstBoltY = centerY + rBolt * scale * Math.sin(firstBoltAngle);
+    drawLeader(centerX, centerY - rOD * scale, centerX - rOD * scale * 0.45, centerY - rOD * scale - 12, 'D');
+    drawLeader(
+      centerX + rBolt * scale * Math.cos(-Math.PI / 4),
+      centerY + rBolt * scale * Math.sin(-Math.PI / 4),
+      centerX + rOD * scale + 8,
+      centerY - rBolt * scale * 0.68,
+      'k (BCD)',
+    );
+    drawLeader(firstBoltX + rHole * scale, firstBoltY - rHole * scale, centerX + rOD * scale + 8, firstBoltY - 8, 'd2');
+    drawLeader(
+      centerX - rGasket * scale * 0.7,
+      centerY + rGasket * scale * 0.7,
+      centerX - rOD * scale - 22,
+      centerY + rOD * scale * 0.55,
+      'G',
+    );
 
     // Labels
     doc.setFontSize(10);
@@ -213,6 +250,7 @@ export async function renderManualReport(params: ManualReportParams): Promise<Bl
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     doc.text(sanitizePdfText(`t = ${fmt.mm(dims.t)}`), sideX + tScaled / 2, centerY + rOD * scale + 18, {align: 'center'});
+    drawLeader(sideX + tScaled / 2, centerY + rOD * scale, sideX + tScaled / 2 + 16, centerY + rOD * scale + 8, 't');
   } else {
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');

@@ -1,6 +1,7 @@
 import type {CalculationResult} from './domain/types/bfTypes';
 import type {ManualCheckResult} from './domain/types/manualCheckTypes';
 import {downloadBlob} from './download';
+import {boltHoleAngleAt} from './cad/geometry/build-bolt-hole-pattern';
 
 export {exportPdfReport} from './export/pdf';
 
@@ -44,7 +45,7 @@ ${r.toFixed(3)}
   body += circle(0, 0, boltCircleRadius - 10, 'GASKET');
 
   for (let i = 0; i < result.dims.bolts; i++) {
-    const angle = (2 * Math.PI * i) / result.dims.bolts;
+    const angle = boltHoleAngleAt(i, result.dims.bolts);
     const x = boltCircleRadius * Math.cos(angle);
     const y = boltCircleRadius * Math.sin(angle);
     body += circle(x, y, holeRadius, 'BOLT');
@@ -108,7 +109,7 @@ ${r.toFixed(3)}
   }
 
   for (let i = 0; i < manual.boltCount; i++) {
-    const angle = (2 * Math.PI * i) / manual.boltCount;
+    const angle = boltHoleAngleAt(i, manual.boltCount);
     const x = boltCircleRadius * Math.cos(angle);
     const y = boltCircleRadius * Math.sin(angle);
     body += circle(x, y, holeRadius, 'BOLT');

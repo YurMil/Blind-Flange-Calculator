@@ -4,6 +4,7 @@ import type {CustomSizingDebug} from '../../domain/calculations/custom';
 import {createPdfDoc} from './pdfDoc';
 import {toFixed, drawSectionHeader, drawField} from './pdfPrimitives';
 import {sanitizePdfText} from './pdfText';
+import {boltHoleAngleAt} from '../../cad/geometry/build-bolt-hole-pattern';
 
 export interface StandardReportParams {
   input: CalculationInput;
@@ -369,7 +370,7 @@ export async function renderStandardReport(params: StandardReportParams): Promis
   doc.setLineWidth(0.3);
   doc.setFillColor(255, 255, 255);
   for (let i = 0; i < result.dims.bolts; i++) {
-    const angle = (2 * Math.PI * i) / result.dims.bolts;
+    const angle = boltHoleAngleAt(i, result.dims.bolts);
     const hx = centerX + rBolt * Math.cos(angle);
     const hy = centerY + rBolt * Math.sin(angle);
     doc.circle(hx, hy, rHole, 'S'); // Just outline for holes

@@ -39,8 +39,8 @@ The application addresses these **screening and documentation** needs in one int
 3. **Manual check** — validate a fully user-defined geometry and thickness.
 4. **Material / fastener / gasket catalogs** — embedded tables for allowable stress, m/y factors, bolt grades.
 5. **Hydrotest pressure helpers** — EN- and ASME-style estimates.
-6. **Visualization** — SVG flange schematic.
-7. **Exports** — PDF report, DXF, configuration JSON, STEP (flat disk + bolt holes).
+6. **Visualization** — SVG flange schematic with primary centre lines, rotated bolt pattern, and visual D / K (BCD) / d2 / G / t callouts.
+7. **Exports** — PDF report, DXF, configuration JSON, STEP (millimetre-based blind flange solid + bolt holes).
 8. **Configuration history** — IndexedDB autosave and manual snapshots in the browser.
 
 ## Explicit Non-Goals / Limitations

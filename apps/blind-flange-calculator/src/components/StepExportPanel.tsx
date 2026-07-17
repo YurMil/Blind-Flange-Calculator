@@ -51,8 +51,8 @@ export default function StepExportPanel({source, input, targetPN}: Props) {
   const abortRef = useRef<AbortController | null>(null);
 
   const hasGeometrySource = useMemo(
-    () => Boolean(source.designConfig || source.customResult || source.result),
-    [source.customResult, source.designConfig, source.result],
+    () => Boolean(source.manualCheck?.manualInput || source.designConfig || source.customResult || source.result),
+    [source.customResult, source.designConfig, source.manualCheck, source.result],
   );
 
   const handleCancel = () => {
@@ -116,7 +116,7 @@ export default function StepExportPanel({source, input, targetPN}: Props) {
       return successText;
     }
 
-    return 'Exports the current blind flange as a 3D STEP model (disk, facing features, bolt-hole pattern).';
+    return 'Exports the current blind flange as a millimetre-based 3D STEP model (disk, facing features, bolt-hole pattern).';
   })();
 
   const facingNote = (() => {
