@@ -75,8 +75,27 @@ describe('InputForm', () => {
     expect(screen.getByLabelText(/^Fastener standard$/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^Fastener type$/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^Grade \/ Material$/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/^Tightening condition$/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/^Method$/i)).toBeInTheDocument();
+  });
+
+  it('collapses advanced tightening controls by default', () => {
+    render(<InputForm {...buildProps()} />);
+
+    const advanced = screen.getByText(/Tightening & torque/i).closest('details');
+    expect(advanced).not.toBeNull();
+    expect(advanced).not.toHaveAttribute('open');
+    expect(screen.queryByLabelText(/^Tightening condition$/i)).not.toBeVisible();
+  });
+
+  it('shortens auto-test footnote and can open help', async () => {
+    const user = userEvent.setup();
+    const onOpenHelp = vi.fn();
+    render(<InputForm {...buildProps({onOpenHelp, autoTestPressure: 14.3})} />);
+
+    expect(screen.getByText(/Auto: 14\.3 bar/i)).toBeInTheDocument();
+    expect(screen.queryByText(/EN 13445-5/i)).not.toBeInTheDocument();
+
+    await user.click(screen.getAllByRole('button', {name: /Learn more/i})[0]);
+    expect(onOpenHelp).toHaveBeenCalled();
   });
 
   it('shows custom geometry fields when geometryMode is custom', () => {

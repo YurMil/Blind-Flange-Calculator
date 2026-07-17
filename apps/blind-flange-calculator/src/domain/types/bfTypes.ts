@@ -154,6 +154,7 @@ export interface InputFormProps {
   showTestPressureWarning?: boolean;
   availableDns: number[];
   materials: MaterialCatalog;
+  onOpenHelp?: () => void;
   onGeometryModeChange: (value: GeometryMode) => void;
   onDnChange: (value: number) => void;
   onCustomOuterDiameterChange: (value: number) => void;

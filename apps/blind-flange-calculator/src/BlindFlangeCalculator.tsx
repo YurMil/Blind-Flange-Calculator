@@ -1,10 +1,11 @@
-import {Gauge, HelpCircle, History, Layers} from 'lucide-react';
+import {HelpCircle, History, Layers} from 'lucide-react';
 import CalculationHelpDialog from './components/CalculationHelpDialog';
 import InputForm from './components/InputForm';
 import ResultsPanel from './components/ResultsPanel';
 import ExportActions from './components/ExportActions';
 import ConfigJsonActions from './components/ConfigJsonActions';
 import ConfigurationHistoryPanel from './components/ConfigurationHistoryPanel';
+import PnSelectionSummary from './components/PnSelectionSummary';
 import {AVAILABLE_DNS, MATERIALS} from './domain/standards/data';
 import {MAX_STANDARD_PN, useBlindFlangeCalculatorState} from './state/useBlindFlangeCalculatorState';
 
@@ -64,8 +65,8 @@ export default function BlindFlangeCalculator() {
           </div>
         </header>
 
-        <div className="grid gap-6 lg:grid-cols-12">
-          <div className="lg:col-span-4 space-y-6">
+        <div className="grid gap-6 lg:grid-cols-12 lg:items-start">
+          <div className="space-y-6 lg:col-span-4">
             <InputForm
               geometryMode={state.geometryMode}
               dn={state.dn}
@@ -92,6 +93,7 @@ export default function BlindFlangeCalculator() {
               availableDns={AVAILABLE_DNS}
               materials={MATERIALS}
               geometryMatchNote={state.geometryMatchNote}
+              onOpenHelp={state.openHelp}
               onGeometryModeChange={state.handleGeometryModeChange}
               onDnChange={state.setDn}
               onCustomOuterDiameterChange={state.setCustomOuterDiameter}
@@ -110,39 +112,18 @@ export default function BlindFlangeCalculator() {
               onFastenerTypeChange={state.setFastenerType}
               onFastenerGradeChange={state.setFastenerGradeId}
             />
-
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 text-sm text-slate-300">
-              <div className="flex items-start gap-3">
-                <div className="mt-1 text-cyan-300">
-                  <Gauge size={18} />
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-slate-400">PN selection</p>
-                  {!state.forceCustom ? (
-                    <p className="mt-1">
-                      Operating pressure {state.pressureOp} bar maps to PN {state.calculatedPn}. Selected class:
-                      <span className="ml-1 font-semibold text-slate-100">
-                        {state.selectedPn ? `PN ${state.selectedPn}` : 'No match'}
-                      </span>
-                      .
-                    </p>
-                  ) : (
-                    <p className="mt-1 text-amber-200">
-                      Operating pressure {state.pressureOp} bar exceeds standard PN {MAX_STANDARD_PN}. Switching to custom sizing.
-                    </p>
-                  )}
-                  {state.maxAvailablePn && state.maxAvailablePn < state.calculatedPn ? (
-                    <p className="mt-2 text-xs text-amber-200">
-                      This build only includes EN 1092-1 bolt patterns up to PN {state.maxAvailablePn} for DN {state.dn}. Add PN{' '}
-                      {state.calculatedPn} data to enable high-pressure sizing.
-                    </p>
-                  ) : null}
-                </div>
-              </div>
-            </div>
           </div>
 
-          <div className="lg:col-span-8">
+          <div className="space-y-6 lg:col-span-8 lg:sticky lg:top-6 lg:self-start">
+            <PnSelectionSummary
+              pressureOp={state.pressureOp}
+              calculatedPn={state.calculatedPn}
+              selectedPn={state.selectedPn}
+              forceCustom={state.forceCustom}
+              maxStandardPn={MAX_STANDARD_PN}
+              maxAvailablePn={state.maxAvailablePn}
+              dn={state.dn}
+            />
             <ResultsPanel
               result={state.forceCustom ? null : state.result}
               customResult={state.customResult}

@@ -114,6 +114,24 @@ export default function CalculationHelpDialog({open, onClose}: Props) {
             </div>
           </div>
 
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/55 p-4" id="help-hydrotest">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-cyan-100">Hydrotest pressure</h3>
+            <div className="mt-3 space-y-3 text-sm text-slate-300">
+              <p>
+                Auto test pressure follows EN 13445-5 style rules, typically{' '}
+                <Formula>max(1.25·P·ratio, 1.43·P)</Formula>, and is never below operating pressure.
+              </p>
+              <p>
+                The Parameters field starts from that auto value. Editing it locks a manual override until you
+                change operating pressure again (which refreshes the auto suggestion).
+              </p>
+              <p>
+                Fastener Proof/Yield values come from the selected grade catalog and feed bolt-area and torque
+                estimates (K-factor method: <Formula>T = K·F·d</Formula>).
+              </p>
+            </div>
+          </div>
+
           <div className="rounded-2xl border border-slate-800 bg-slate-900/55 p-4">
             <h3 className="text-sm font-semibold uppercase tracking-wide text-cyan-100">Checks included</h3>
             <div className="mt-3 space-y-2 text-sm text-slate-300">
