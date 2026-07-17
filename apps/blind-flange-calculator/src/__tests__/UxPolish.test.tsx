@@ -22,6 +22,7 @@ describe('HeaderToolbar', () => {
     const user = userEvent.setup();
     const onOpenHelp = vi.fn();
     const onOpenHistory = vi.fn();
+    const onOpenStandards = vi.fn();
 
     render(
       <HeaderToolbar
@@ -30,6 +31,7 @@ describe('HeaderToolbar', () => {
         onImport={vi.fn()}
         onOpenHelp={onOpenHelp}
         onOpenHistory={onOpenHistory}
+        onOpenStandards={onOpenStandards}
       />,
     );
 

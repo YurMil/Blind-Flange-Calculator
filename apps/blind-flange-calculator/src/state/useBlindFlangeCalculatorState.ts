@@ -53,6 +53,7 @@ export function useBlindFlangeCalculatorState() {
   const [isTagUserDefined, setIsTagUserDefined] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [isStandardsOpen, setIsStandardsOpen] = useState(false);
 
   const calculatedPn = useMemo(() => getCalculatedPN(pressureOp), [pressureOp]);
   const maxAvailablePn = useMemo(() => getMaxAvailablePN(dn), [dn]);
@@ -475,6 +476,23 @@ export function useBlindFlangeCalculatorState() {
   const closeHelp = useCallback(() => setIsHelpOpen(false), []);
   const openHistory = useCallback(() => setIsHistoryOpen(true), []);
   const closeHistory = useCallback(() => setIsHistoryOpen(false), []);
+  const openStandards = useCallback(() => setIsStandardsOpen(true), []);
+  const closeStandards = useCallback(() => setIsStandardsOpen(false), []);
+
+  const applyStandardFlange = useCallback((dnValue: number, pnValue: number) => {
+    // Pressure equal to the PN designation maps exactly via getCalculatedPN,
+    // and pickPNClass then selects this PN when it exists for the DN.
+    setGeometryMode('standard');
+    setDn(dnValue);
+    setPressureOp(pnValue);
+    setManualTestPressure(false);
+    setDesignConfig(null);
+    setIsUserDefined(false);
+    setCustomResult(null);
+    setManualCheckResult(null);
+    setGeometryMatchNote(undefined);
+    setIsStandardsOpen(false);
+  }, []);
 
   return {
     dn,
@@ -504,6 +522,7 @@ export function useBlindFlangeCalculatorState() {
     isTagUserDefined,
     isHistoryOpen,
     isHelpOpen,
+    isStandardsOpen,
 
     setDn,
     setCustomOuterDiameter,
@@ -547,5 +566,8 @@ export function useBlindFlangeCalculatorState() {
     closeHelp,
     openHistory,
     closeHistory,
+    openStandards,
+    closeStandards,
+    applyStandardFlange,
   };
 }
