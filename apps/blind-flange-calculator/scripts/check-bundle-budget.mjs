@@ -7,7 +7,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const STATIC_DIR = path.resolve('static/utility-apps/blind-flange-calculator');
+// Build writes to workspace `static/…` (see vite `outDir`), not under `apps/…`.
+const STATIC_DIR = path.resolve(import.meta.dirname, '../../../static/utility-apps/blind-flange-calculator');
 const ASSETS_DIR = path.join(STATIC_DIR, 'assets');
 
 /** Soft budgets (bytes). Adjust when intentional CAD/PDF upgrades land. */
