@@ -1,6 +1,6 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import type {ReactNode} from 'react';
-import {AnimatePresence, motion} from 'framer-motion';
+import {AnimatePresence, motion, useReducedMotion} from 'framer-motion';
 import {Bolt, Calculator, CircleDot, Gauge, Settings2, ShieldCheck, Weight} from 'lucide-react';
 import {
   calculateCustomBlindFlange,
@@ -15,6 +15,7 @@ import ManualCheckPanel from './ManualCheckPanel';
 import SizingVerdictStrip from './SizingVerdictStrip';
 import type {CalculationInput, DesignConfiguration} from '../domain/types/bfTypes';
 import type {ManualCheckResult, ManualMode} from '../domain/types/manualCheckTypes';
+import {panelMotion} from '../motion';
 
 type Props = {
   input: CalculationInput;
@@ -77,11 +78,11 @@ const ResultCard = ({
     <div className="flex items-start gap-3">
       <div className="mt-1 text-cyan-300">{icon}</div>
       <div>
-        <p className="text-xs uppercase tracking-wide text-slate-400">{label}</p>
-        <p className="mt-1 text-2xl font-semibold">
-          {value} {unit ? <span className="text-sm font-normal text-slate-400">{unit}</span> : null}
+        <p className="text-xs uppercase tracking-wide text-bf-caption">{label}</p>
+        <p className="mt-1 font-numeric text-2xl font-semibold">
+          {value} {unit ? <span className="text-sm font-normal text-bf-hint">{unit}</span> : null}
         </p>
-        {subtext ? <p className="mt-1 text-xs text-slate-400">{subtext}</p> : null}
+        {subtext ? <p className="mt-1 text-xs text-bf-hint">{subtext}</p> : null}
       </div>
     </div>
   </div>
@@ -97,6 +98,8 @@ export default function CustomSizingPanel({
   const [preference, setPreference] = useState<CustomPreference>('min_weight');
   const [mode, setMode] = useState<ManualMode>('auto');
   const [manualConfig, setManualConfig] = useState<DesignConfiguration | null>(null);
+  const reduceMotion = useReducedMotion();
+  const motionProps = panelMotion(reduceMotion);
   const fastenerSelection = useMemo(() => resolveFastenerSelection(input), [input]);
   const fastenerPlaceholder = isFastenerPlaceholder(fastenerSelection.entry);
   const fastenerPlaceholderNote = fastenerSelection.entry.notes ?? '';
@@ -283,10 +286,10 @@ export default function CustomSizingPanel({
         {mode === 'auto' && custom ? (
           <motion.div
             key="custom-result"
-            initial={{opacity: 0, y: 12}}
-            animate={{opacity: 1, y: 0}}
-            exit={{opacity: 0, y: -8}}
-            transition={{duration: 0.25}}
+            initial={motionProps.initial}
+            animate={motionProps.animate}
+            exit={motionProps.exit}
+            transition={reduceMotion ? {duration: 0} : {duration: 0.25}}
             className="space-y-6"
           >
             <SizingVerdictStrip
@@ -298,7 +301,7 @@ export default function CustomSizingPanel({
             />
 
             <div>
-              <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Reference metrics</p>
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-bf-hint">Reference metrics</p>
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               <ResultCard
                 icon={<Weight size={18} />}
@@ -469,10 +472,10 @@ export default function CustomSizingPanel({
         ) : mode === 'auto' ? (
           <motion.div
             key="custom-fail"
-            initial={{opacity: 0, y: 12}}
-            animate={{opacity: 1, y: 0}}
-            exit={{opacity: 0}}
-            transition={{duration: 0.2}}
+            initial={motionProps.initial}
+            animate={motionProps.animate}
+            exit={reduceMotion ? undefined : {opacity: 0}}
+            transition={reduceMotion ? {duration: 0} : {duration: 0.2}}
             className="rounded-3xl border border-amber-500/40 bg-amber-500/10 p-6 text-amber-100"
           >
             <p className="text-sm uppercase tracking-wide text-amber-200">No combination found</p>

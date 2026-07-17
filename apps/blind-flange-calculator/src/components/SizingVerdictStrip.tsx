@@ -32,11 +32,11 @@ export default function SizingVerdictStrip({
       className="rounded-3xl border border-cyan-400/30 bg-cyan-500/10 p-4 shadow-lg shadow-slate-950/20 md:p-5"
       aria-label="Sizing verdict"
     >
-      <p className="text-xs font-semibold uppercase tracking-wide text-cyan-200/90">Sizing verdict</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-cyan-100">Sizing verdict</p>
       <div className="mt-3 grid gap-3 md:grid-cols-3">
         <div className="rounded-2xl border border-slate-700/80 bg-slate-950/45 p-3">
-          <p className="text-xs uppercase tracking-wide text-slate-400">Selected PN</p>
-          <p className="mt-1 text-3xl font-semibold text-slate-50">
+          <p className="text-xs uppercase tracking-wide text-bf-caption">Selected PN</p>
+          <p className="mt-1 font-numeric text-3xl font-semibold text-slate-50">
             {selectedPn !== undefined ? `PN ${selectedPn}` : '—'}
           </p>
         </div>
@@ -45,12 +45,12 @@ export default function SizingVerdictStrip({
           <div className="flex items-start gap-2">
             <Layers size={16} className="mt-1 text-cyan-300" aria-hidden="true" />
             <div>
-              <p className="text-xs uppercase tracking-wide text-slate-400">Recommended plate thickness</p>
-              <p className="mt-1 text-3xl font-semibold text-slate-50">
+              <p className="text-xs uppercase tracking-wide text-bf-caption">Recommended plate thickness</p>
+              <p className="mt-1 font-numeric text-3xl font-semibold text-slate-50">
                 {formatFixed(recommendedThicknessMm, 0)}{' '}
-                <span className="text-base font-normal text-slate-400">mm</span>
+                <span className="text-base font-normal text-bf-hint">mm</span>
               </p>
-              <p className="mt-1 text-xs text-slate-400">
+              <p className="mt-1 text-xs text-bf-hint">
                 Code minimum {formatFixed(codeMinimumMm, 2)} mm (with CA, before stock rounding)
               </p>
             </div>
@@ -65,13 +65,13 @@ export default function SizingVerdictStrip({
               <CheckCircle2 size={16} className="mt-1" aria-hidden="true" />
             )}
             <div>
-              <p className="text-xs uppercase tracking-wide opacity-80">Bolt check</p>
-              <p className="mt-1 text-3xl font-semibold">
+              <p className="text-xs uppercase tracking-wide opacity-90">Bolt check</p>
+              <p className="mt-1 font-numeric text-3xl font-semibold">
                 {boltPass === null ? 'n/a' : boltPass ? 'Pass' : 'Fail'}
               </p>
-              {boltDetail ? <p className="mt-1 text-xs opacity-80">{boltDetail}</p> : null}
+              {boltDetail ? <p className="mt-1 text-xs opacity-90">{boltDetail}</p> : null}
               {boltPass === true ? (
-                <p className="mt-1 text-xs opacity-80">Ready for PDF / DXF / STEP export</p>
+                <p className="mt-1 text-xs opacity-90">Ready for PDF / DXF / STEP export</p>
               ) : null}
             </div>
           </div>

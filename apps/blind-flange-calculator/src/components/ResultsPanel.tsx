@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {AnimatePresence, motion} from 'framer-motion';
+import {AnimatePresence, motion, useReducedMotion} from 'framer-motion';
 import {AlertTriangle, Bolt, CircleDot, Gauge, ShieldCheck, Weight} from 'lucide-react';
 import CustomSizingPanel from './CustomSizingPanel';
 import FlangeVisualizer from './FlangeVisualizer';
@@ -8,6 +8,7 @@ import SizingVerdictStrip from './SizingVerdictStrip';
 import {MATERIALS} from '../domain/standards/data';
 import type {ResultsPanelProps} from '../domain/types/bfTypes';
 import type {ResultCardProps} from '../uiTypes';
+import {panelMotion} from '../motion';
 
 const formatFixed = (value: number, digits = 1) => value.toFixed(digits);
 
@@ -22,11 +23,11 @@ const ResultCard = ({icon, label, value, unit, subtext, highlight, tone = 'secon
     <div className="flex items-start gap-3">
       <div className={`mt-0.5 ${highlight ? 'text-cyan-300' : 'text-slate-500'}`}>{icon}</div>
       <div>
-        <p className="text-xs uppercase tracking-wide text-slate-400">{label}</p>
-        <p className={`mt-1 font-semibold ${tone === 'primary' ? 'text-2xl' : 'text-xl'}`}>
-          {value} {unit ? <span className="text-sm font-normal text-slate-400">{unit}</span> : null}
+        <p className="text-xs uppercase tracking-wide text-bf-caption">{label}</p>
+        <p className={`mt-1 font-numeric font-semibold ${tone === 'primary' ? 'text-2xl' : 'text-xl'}`}>
+          {value} {unit ? <span className="text-sm font-normal text-bf-hint">{unit}</span> : null}
         </p>
-        {subtext ? <p className="mt-1 text-xs text-slate-500">{subtext}</p> : null}
+        {subtext ? <p className="mt-1 text-xs text-bf-hint">{subtext}</p> : null}
       </div>
     </div>
   </div>
@@ -64,6 +65,8 @@ export default function ResultsPanel({
     : null;
   const activeConfig = designConfig ?? fallbackConfig;
   const [viewMode, setViewMode] = useState<'auto' | 'manual'>('auto');
+  const reduceMotion = useReducedMotion();
+  const motionProps = panelMotion(reduceMotion);
 
   useEffect(() => {
     if (isUserDefined) {
@@ -103,10 +106,10 @@ export default function ResultsPanel({
       <AnimatePresence mode="wait">
         <motion.div
           key="bolt-fail"
-          initial={{opacity: 0, y: 12}}
-          animate={{opacity: 1, y: 0}}
-          exit={{opacity: 0, y: -8}}
-          transition={{duration: 0.3}}
+          initial={motionProps.initial}
+          animate={motionProps.animate}
+          exit={motionProps.exit}
+          transition={motionProps.transition}
           className="space-y-6"
         >
           {verdict}
@@ -150,10 +153,10 @@ export default function ResultsPanel({
       {result ? (
         <motion.div
           key="results"
-          initial={{opacity: 0, y: 12}}
-          animate={{opacity: 1, y: 0}}
-          exit={{opacity: 0, y: -8}}
-          transition={{duration: 0.3}}
+          initial={motionProps.initial}
+          animate={motionProps.animate}
+          exit={motionProps.exit}
+          transition={motionProps.transition}
           className="space-y-6"
         >
           {verdict}
@@ -210,7 +213,7 @@ export default function ResultsPanel({
           {viewMode === 'auto' ? (
             <>
               <div>
-                <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Reference metrics</p>
+                <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-bf-hint">Reference metrics</p>
                 <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                   <ResultCard
                     icon={<Weight size={18} />}
@@ -269,10 +272,10 @@ export default function ResultsPanel({
 
               <div className="rounded-3xl border border-slate-800 bg-slate-950/40 p-6">
                 <h3 className="text-lg font-semibold text-slate-100">Calculation details (EN 13445-3)</h3>
-                <p className="mt-1 text-xs text-slate-500">Reference breakdown — primary answers are in the sizing verdict above.</p>
+                <p className="mt-1 text-xs text-bf-hint">Reference breakdown — primary answers are in the sizing verdict above.</p>
                 <div className="mt-4 overflow-x-auto">
                   <table className="w-full text-sm text-slate-300">
-                    <thead className="text-xs uppercase text-slate-500">
+                    <thead className="text-xs uppercase text-bf-hint">
                       <tr>
                         <th className="py-2 text-left">Parameter</th>
                         <th className="py-2 text-left">Value</th>
@@ -351,10 +354,10 @@ export default function ResultsPanel({
       ) : (
         <motion.div
           key="custom-sizing"
-          initial={{opacity: 0, y: 12}}
+          initial={reduceMotion ? false : {opacity: 0, y: 12}}
           animate={{opacity: 1, y: 0}}
-          exit={{opacity: 0}}
-          transition={{duration: 0.2}}
+          exit={reduceMotion ? undefined : {opacity: 0}}
+          transition={reduceMotion ? {duration: 0} : {duration: 0.2}}
         >
           <CustomSizingPanel
             input={input}

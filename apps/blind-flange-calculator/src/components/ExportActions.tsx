@@ -69,12 +69,12 @@ export default function ExportActions({
   const disabledDxf = !result && !manualCheckResult?.manualInput;
 
   return (
-    <section className="mt-8 rounded-3xl border border-slate-800 bg-slate-900/55 p-5 shadow-lg shadow-slate-950/30">
+    <section id="file-export" className="mt-8 scroll-mt-24 rounded-3xl border border-slate-800 bg-slate-900/55 p-5 shadow-lg shadow-slate-950/30">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <p className="text-xs uppercase tracking-wide text-slate-400">File generation</p>
+          <p className="text-xs uppercase tracking-wide text-bf-caption">File generation</p>
           <h2 className="mt-1 text-lg font-semibold text-slate-100">Download configured flange</h2>
-          <p className="text-xs text-slate-500">Generate files after the parameters and manual checks are set.</p>
+          <p className="text-xs text-bf-hint">Generate files after the parameters and manual checks are set.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
         <button

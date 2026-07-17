@@ -5,11 +5,27 @@ type Props<TConfig> = {
   config: TConfig;
   fileName: string;
   onImport: (config: unknown) => void;
+  presentation?: 'toolbar' | 'menu';
 };
 
-export default function ConfigJsonActions<TConfig>({config, fileName, onImport}: Props<TConfig>) {
+const toolbarButton =
+  'flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm font-semibold text-slate-100 transition hover:border-cyan-400/50 hover:bg-slate-800';
+const toolbarExport =
+  'flex items-center gap-2 rounded-xl border border-cyan-400/40 bg-cyan-500/10 px-3 py-2 text-sm font-semibold text-cyan-100 transition hover:border-cyan-300 hover:bg-cyan-500/20';
+const menuButton =
+  'flex w-full items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2.5 text-left text-sm font-semibold text-slate-100 transition hover:border-cyan-400/50 hover:bg-slate-800';
+const menuExport =
+  'flex w-full items-center gap-2 rounded-xl border border-cyan-400/40 bg-cyan-500/10 px-3 py-2.5 text-left text-sm font-semibold text-cyan-100 transition hover:border-cyan-300 hover:bg-cyan-500/20';
+
+export default function ConfigJsonActions<TConfig>({
+  config,
+  fileName,
+  onImport,
+  presentation = 'toolbar',
+}: Props<TConfig>) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const isMenu = presentation === 'menu';
 
   const handleExport = () => {
     setError(null);
@@ -38,8 +54,8 @@ export default function ConfigJsonActions<TConfig>({config, fileName, onImport}:
   };
 
   return (
-    <div className="flex flex-col items-start gap-2 lg:items-end">
-      <div className="flex flex-wrap items-center gap-2">
+    <div className={isMenu ? 'space-y-2' : 'flex flex-col items-start gap-2 lg:items-end'}>
+      <div className={isMenu ? 'space-y-2' : 'flex flex-wrap items-center gap-2'}>
         <input
           ref={inputRef}
           type="file"
@@ -49,16 +65,18 @@ export default function ConfigJsonActions<TConfig>({config, fileName, onImport}:
         />
         <button
           type="button"
+          role={isMenu ? 'menuitem' : undefined}
           onClick={() => inputRef.current?.click()}
-          className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm font-semibold text-slate-100 transition hover:border-cyan-400/50 hover:bg-slate-800"
+          className={isMenu ? menuButton : toolbarButton}
         >
           <FileUp size={16} />
           <span>Import JSON</span>
         </button>
         <button
           type="button"
+          role={isMenu ? 'menuitem' : undefined}
           onClick={handleExport}
-          className="flex items-center gap-2 rounded-xl border border-cyan-400/40 bg-cyan-500/10 px-3 py-2 text-sm font-semibold text-cyan-100 transition hover:border-cyan-300 hover:bg-cyan-500/20"
+          className={isMenu ? menuExport : toolbarExport}
         >
           <FileDown size={16} />
           <span>Export JSON</span>

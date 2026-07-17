@@ -16,10 +16,10 @@ export default function Field({id, label, hint, children, className = 'space-y-2
   return (
     <div className={className}>
       <div className="flex items-center justify-between gap-2">
-        <label htmlFor={id} className="text-xs uppercase tracking-wide text-slate-400">
+        <label htmlFor={id} className="text-xs font-medium uppercase tracking-wide text-bf-caption">
           {label}
         </label>
-        {hint ? <span className="text-xs text-slate-500">{hint}</span> : null}
+        {hint ? <span className="text-xs text-bf-hint">{hint}</span> : null}
       </div>
       {children}
     </div>

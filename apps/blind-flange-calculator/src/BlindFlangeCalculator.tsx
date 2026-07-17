@@ -1,67 +1,55 @@
-import {HelpCircle, History, Layers} from 'lucide-react';
+import {Layers} from 'lucide-react';
 import CalculationHelpDialog from './components/CalculationHelpDialog';
 import InputForm from './components/InputForm';
 import ResultsPanel from './components/ResultsPanel';
 import ExportActions from './components/ExportActions';
-import ConfigJsonActions from './components/ConfigJsonActions';
+import HeaderToolbar from './components/HeaderToolbar';
 import ConfigurationHistoryPanel from './components/ConfigurationHistoryPanel';
 import PnSelectionSummary from './components/PnSelectionSummary';
+import MobileResultsBar from './components/MobileResultsBar';
 import {AVAILABLE_DNS, MATERIALS} from './domain/standards/data';
 import {MAX_STANDARD_PN, useBlindFlangeCalculatorState} from './state/useBlindFlangeCalculatorState';
 
 export default function BlindFlangeCalculator() {
   const state = useBlindFlangeCalculatorState();
+  const exportResult = state.exportResult;
+  const boltPass =
+    exportResult?.boltingSummary === undefined ? null : Boolean(exportResult.boltingSummary.pass);
 
   return (
-    <div className="min-h-full bg-slate-950 text-slate-100">
-      <div className="mx-auto max-w-6xl px-4 py-6 lg:px-8 lg:py-10">
-        <header className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <div className="min-h-full bg-slate-950 font-sans text-slate-100">
+      <div className="mx-auto max-w-6xl px-4 py-6 pb-24 md:pb-10 lg:px-8 lg:py-10">
+        <header className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/40 bg-cyan-500/10 px-3 py-1 text-xs uppercase tracking-wide text-cyan-200">
+            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/40 bg-cyan-500/10 px-3 py-1 text-xs uppercase tracking-wide text-cyan-100">
               <Layers size={14} />
               EN 13445-3 / EN 1092-1
             </div>
             <div>
-              <h1 className="text-3xl font-semibold text-slate-100">Blind Flange Calculator</h1>
-              <p className="text-sm text-slate-400">
+              <h1 className="text-3xl font-semibold tracking-tight text-slate-50">Blind Flange Calculator</h1>
+              <p className="mt-1 text-sm text-bf-caption">
                 Automatic PN selection and thickness sizing with a quick weight estimate.
               </p>
             </div>
           </div>
-          <div className="flex flex-col items-start gap-3 lg:items-end">
-            <label className="w-full max-w-sm space-y-1" htmlFor="bf-flange-tag">
-              <span className="text-xs uppercase tracking-wide text-slate-400">Flange tag</span>
+          <div className="flex w-full max-w-md flex-col items-stretch gap-3 lg:items-end">
+            <label className="w-full space-y-1" htmlFor="bf-flange-tag">
+              <span className="text-xs font-medium uppercase tracking-wide text-bf-caption">Flange tag</span>
               <input
                 id="bf-flange-tag"
-                className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm font-semibold text-slate-100 outline-none transition focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 font-numeric text-sm font-semibold text-slate-100 outline-none transition focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
                 value={state.flangeTag}
                 onChange={(event) => state.handleFlangeTagChange(event.target.value)}
                 onBlur={state.handleFlangeTagBlur}
               />
             </label>
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={state.openHelp}
-                className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-700 bg-slate-900/80 text-slate-100 transition hover:border-cyan-400/50 hover:bg-slate-800"
-                aria-label="Open calculation help"
-              >
-                <HelpCircle size={17} />
-              </button>
-              <button
-                type="button"
-                onClick={state.openHistory}
-                className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm font-semibold text-slate-100 transition hover:border-cyan-400/50 hover:bg-slate-800"
-              >
-                <History size={16} />
-                <span>History</span>
-              </button>
-              <ConfigJsonActions
-                config={state.configurationFile}
-                fileName={`${state.flangeTag}.json`}
-                onImport={state.handleImportConfiguration}
-              />
-            </div>
+            <HeaderToolbar
+              config={state.configurationFile}
+              fileName={`${state.flangeTag}.json`}
+              onImport={state.handleImportConfiguration}
+              onOpenHelp={state.openHelp}
+              onOpenHistory={state.openHistory}
+            />
           </div>
         </header>
 
@@ -162,6 +150,13 @@ export default function BlindFlangeCalculator() {
         />
         <CalculationHelpDialog open={state.isHelpOpen} onClose={state.closeHelp} />
       </div>
+
+      <MobileResultsBar
+        selectedPn={exportResult?.selectedPN ?? state.selectedPn}
+        thicknessMm={exportResult?.recommendedThickness}
+        boltPass={boltPass}
+        canExport={Boolean(exportResult || state.manualCheckResult)}
+      />
     </div>
   );
 }

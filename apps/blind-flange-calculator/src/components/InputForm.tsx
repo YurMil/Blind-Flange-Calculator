@@ -203,7 +203,7 @@ export default function InputForm({
                   onCommit={onPressureTestChange}
                 />
               </div>
-              <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500">
+              <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-bf-hint">
                 <span>
                   Auto: {Number.isFinite(autoTestPressure) ? `${autoTestPressure?.toFixed(1)} bar` : 'n/a'}
                 </span>
@@ -358,7 +358,7 @@ export default function InputForm({
           <details className="rounded-2xl border border-slate-800 bg-slate-950/40 p-3">
             <summary className="cursor-pointer select-none text-sm font-semibold text-slate-200">
               Tightening & torque
-              <span className="ml-2 text-xs font-normal text-slate-500">
+              <span className="ml-2 text-xs font-normal text-bf-hint">
                 {frictionPreset === 'dry' ? 'Dry' : 'Lubricated'} · Proof/Yield {fastenerStrength}
               </span>
             </summary>
@@ -384,7 +384,7 @@ export default function InputForm({
                   <option value="k_factor">K-factor (torque = K·F·d)</option>
                 </select>
               </Field>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-bf-hint">
                 Proof/Yield: {fastenerStrength}
                 {fastenerIsPlaceholder ? ' · Placeholder values' : ''}
                 {fastenerNote ? ` · ${fastenerNote}` : ''}

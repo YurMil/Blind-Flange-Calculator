@@ -1,16 +1,24 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: "IBM Plex Sans", "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", "Consolas", monospace;
+  --color-bf-caption: #d0d7e2;
+  --color-bf-hint: #aeb8c7;
+  --color-bf-panel: #0b1220;
+}
+
 :root {
-  color: #e2e8f0;
+  color: #e8edf5;
   background: #020617;
-  font-family:
-    "Aptos",
-    "Segoe UI",
-    sans-serif;
+  font-family: var(--font-sans);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Caption/hint tokens target WCAG AA on slate-950 / slate-900 panels. */
+  --bf-caption: #d0d7e2;
+  --bf-hint: #aeb8c7;
 }
 
 html,
@@ -23,8 +31,8 @@ body,
 body {
   min-width: 320px;
   background:
-    radial-gradient(circle at top left, rgb(14 116 144 / 18%), transparent 34rem),
-    linear-gradient(135deg, #020617 0%, #0f172a 48%, #111827 100%);
+    radial-gradient(circle at top left, rgb(14 116 144 / 14%), transparent 34rem),
+    linear-gradient(135deg, #020617 0%, #0b1220 48%, #111827 100%);
 }
 
 button,
@@ -32,4 +40,20 @@ input,
 select,
 textarea {
   font: inherit;
+}
+
+.font-numeric {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

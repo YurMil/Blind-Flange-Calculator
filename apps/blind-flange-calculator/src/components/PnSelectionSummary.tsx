@@ -26,7 +26,7 @@ export default function PnSelectionSummary({
           <Gauge size={18} />
         </div>
         <div>
-          <p className="text-xs uppercase tracking-wide text-slate-400">PN selection</p>
+          <p className="text-xs uppercase tracking-wide text-bf-caption">PN selection</p>
           {!forceCustom ? (
             <p className="mt-1">
               Operating pressure {pressureOp} bar maps to PN {calculatedPn}. Selected class:
