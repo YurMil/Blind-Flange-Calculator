@@ -1,5 +1,5 @@
 import {useEffect, useId, useRef, useState} from 'react';
-import {HelpCircle, History, MoreHorizontal} from 'lucide-react';
+import {HelpCircle, History, MoreHorizontal, Table2} from 'lucide-react';
 import ConfigJsonActions from './ConfigJsonActions';
 
 type Props<TConfig> = {
@@ -8,6 +8,7 @@ type Props<TConfig> = {
   onImport: (config: unknown) => void;
   onOpenHelp: () => void;
   onOpenHistory: () => void;
+  onOpenStandards: () => void;
 };
 
 const menuButtonClass =
@@ -19,6 +20,7 @@ export default function HeaderToolbar<TConfig>({
   onImport,
   onOpenHelp,
   onOpenHistory,
+  onOpenStandards,
 }: Props<TConfig>) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuId = useId();
@@ -49,6 +51,14 @@ export default function HeaderToolbar<TConfig>({
   return (
     <div ref={rootRef} className="relative flex w-full flex-col items-stretch gap-2 sm:items-end">
       <div className="hidden flex-wrap items-center gap-2 md:flex md:justify-end">
+        <button
+          type="button"
+          onClick={onOpenStandards}
+          className="flex items-center gap-2 rounded-xl border border-cyan-400/40 bg-cyan-500/10 px-3 py-2 text-sm font-semibold text-cyan-100 transition hover:border-cyan-300 hover:bg-cyan-500/20"
+        >
+          <Table2 size={16} />
+          <span>EN 1092-1</span>
+        </button>
         <button
           type="button"
           onClick={onOpenHelp}
@@ -85,6 +95,18 @@ export default function HeaderToolbar<TConfig>({
             role="menu"
             className="absolute right-0 z-30 mt-2 w-full min-w-[14rem] space-y-2 rounded-2xl border border-slate-700 bg-slate-950 p-2 shadow-2xl shadow-slate-950"
           >
+            <button
+              type="button"
+              role="menuitem"
+              className={menuButtonClass}
+              onClick={() => {
+                setMenuOpen(false);
+                onOpenStandards();
+              }}
+            >
+              <Table2 size={16} />
+              EN 1092-1 tables
+            </button>
             <button
               type="button"
               role="menuitem"

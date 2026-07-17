@@ -1,5 +1,6 @@
 import {Layers} from 'lucide-react';
 import CalculationHelpDialog from './components/CalculationHelpDialog';
+import En1092StandardsDialog from './components/En1092StandardsDialog';
 import InputForm from './components/InputForm';
 import ResultsPanel from './components/ResultsPanel';
 import ExportActions from './components/ExportActions';
@@ -49,6 +50,7 @@ export default function BlindFlangeCalculator() {
               onImport={state.handleImportConfiguration}
               onOpenHelp={state.openHelp}
               onOpenHistory={state.openHistory}
+              onOpenStandards={state.openStandards}
             />
           </div>
         </header>
@@ -149,6 +151,13 @@ export default function BlindFlangeCalculator() {
           onOpenConfig={state.handleImportConfiguration}
         />
         <CalculationHelpDialog open={state.isHelpOpen} onClose={state.closeHelp} />
+        <En1092StandardsDialog
+          open={state.isStandardsOpen}
+          onClose={state.closeStandards}
+          currentDn={state.dn}
+          currentPn={state.selectedPn}
+          onSelect={({dn, pn}) => state.applyStandardFlange(dn, pn)}
+        />
       </div>
 
       <MobileResultsBar
