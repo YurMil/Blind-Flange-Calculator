@@ -89,8 +89,14 @@ export default function InputForm({
   onFastenerTypeChange,
   onFastenerGradeChange,
 }: InputFormProps) {
-  const fastenerOptions = getFastenerOptionsFor(fastenerStandard, fastenerType);
+  const fastenerOptionsBase = getFastenerOptionsFor(fastenerStandard, fastenerType);
   const selectedFastener = getFastenerCatalogEntry(fastenerGradeId);
+  // Placeholder grades are hidden from the default catalog (B-09), but if an
+  // older saved configuration still references one, keep it selectable so the
+  // dropdown doesn't silently show a mismatched/blank selection.
+  const fastenerOptions = fastenerOptionsBase.some((entry) => entry.id === selectedFastener.id)
+    ? fastenerOptionsBase
+    : [...fastenerOptionsBase, selectedFastener];
   const fastenerNote = selectedFastener.notes ?? '';
   const fastenerIsPlaceholder = isFastenerPlaceholder(selectedFastener);
   const fastenerStrength =

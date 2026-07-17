@@ -21,17 +21,7 @@ import type {
   TighteningMethod,
 } from '../bfTypes';
 import type {ManualCheckResult} from '../manualCheckTypes';
-import {
-  MATERIAL_IDS,
-  createDefaultFlangeTag,
-  isRecord,
-  optionalNumber,
-  parseDesignConfig,
-  requiredNumber,
-  requiredString,
-  resolveImportedDn,
-  type BlindFlangeConfigurationFile,
-} from './configurationFile';
+import {createDefaultFlangeTag, migrateConfig, type BlindFlangeConfigurationFile} from './configurationFile';
 
 export const MAX_STANDARD_PN = 400;
 
@@ -96,7 +86,10 @@ export function useBlindFlangeCalculatorState() {
   }, [generatedFlangeTag, isTagUserDefined]);
 
   useEffect(() => {
-    const available = getFastenerOptionsFor(fastenerStandard, fastenerType);
+    // includePlaceholders=true: this effect only guards against a fastener grade that
+    // doesn't belong to the selected standard/type at all (e.g. after switching EN/ASME).
+    // It must not evict a placeholder grade that a config/history import legitimately set.
+    const available = getFastenerOptionsFor(fastenerStandard, fastenerType, true);
     const hasCurrent = available.some((entry) => entry.id === fastenerGradeId);
     if (!hasCurrent && available.length > 0) {
       setFastenerGradeId(available[0].id);
@@ -423,65 +416,44 @@ export function useBlindFlangeCalculatorState() {
     if (isUser) setIsUserDefined(true);
   }, []);
 
-  const handleImportConfiguration = useCallback(
-    (value: unknown) => {
-      if (!isRecord(value) || value.schema !== 'blind-flange-calculator-config' || !isRecord(value.parameters)) {
-        throw new Error('This is not a Blind Flange Calculator JSON configuration.');
-      }
+  const handleImportConfiguration = useCallback((value: unknown) => {
+    // migrateConfig validates the schema and normalizes any supported prior
+    // version into the current parameters shape, so it can be applied directly.
+    const migrated = migrateConfig(value);
+    const params = migrated.parameters;
 
-      const params = value.parameters;
-      const nextDn = requiredNumber(params.dn, dn);
-      setGeometryMode(requiredString(params.geometryMode, ['standard', 'custom'] as const, geometryMode));
-      setDn(resolveImportedDn(nextDn, dn));
-      setCustomOuterDiameter(optionalNumber(params.customOuterDiameter));
-      setCustomNozzleId(optionalNumber(params.customNozzleId));
-      setPressureOp(requiredNumber(params.pressureOp, pressureOp));
-      setPressureTest(requiredNumber(params.pressureTest, pressureTest));
-      setManualTestPressure(Boolean(params.manualTestPressure));
-      setTemperature(requiredNumber(params.temperature, temperature));
-      setMaterial(requiredString(params.material, MATERIAL_IDS, material));
-      setCorrosionAllowance(requiredNumber(params.corrosionAllowance, corrosionAllowance));
-      setGasketMaterial(requiredString(params.gasketMaterial, ['graphite', 'tesnitBA50', 'ptfe'] as const, gasketMaterial));
-      setGasketThickness(requiredNumber(params.gasketThickness, gasketThickness));
-      setGasketFacing(requiredString(params.gasketFacing, ['RF', 'FF', 'IBC'] as const, gasketFacing));
-      setFrictionPreset(requiredString(params.frictionPreset, ['dry', 'lubricated'] as const, frictionPreset));
-      setTighteningMethod(requiredString(params.tighteningMethod, ['k_factor', 'detailed'] as const, tighteningMethod));
-      setFastenerStandard(requiredString(params.fastenerStandard, ['EN', 'ASME'] as const, fastenerStandard));
-      setFastenerType(requiredString(params.fastenerType, ['BOLT', 'STUD'] as const, fastenerType));
-      if (typeof params.fastenerGradeId === 'string') {
-        setFastenerGradeId(params.fastenerGradeId);
-      }
-      setDesignConfig(parseDesignConfig(params.designConfig));
-      setIsUserDefined(Boolean(params.isUserDefined));
-      const importedTag =
-        typeof value.tag === 'string' ? value.tag : typeof params.flangeTag === 'string' ? params.flangeTag : '';
-      if (importedTag) {
-        setFlangeTag(importedTag);
-        setIsTagUserDefined(true);
-      } else {
-        setIsTagUserDefined(false);
-      }
-      setCustomResult(null);
-      setManualCheckResult(null);
-      setGeometryMatchNote(undefined);
-    },
-    [
-      corrosionAllowance,
-      dn,
-      fastenerStandard,
-      fastenerType,
-      frictionPreset,
-      gasketFacing,
-      gasketMaterial,
-      gasketThickness,
-      geometryMode,
-      material,
-      pressureOp,
-      pressureTest,
-      temperature,
-      tighteningMethod,
-    ],
-  );
+    setGeometryMode(params.geometryMode);
+    setDn(params.dn);
+    setCustomOuterDiameter(params.customOuterDiameter);
+    setCustomNozzleId(params.customNozzleId);
+    setPressureOp(params.pressureOp);
+    setPressureTest(params.pressureTest);
+    setManualTestPressure(params.manualTestPressure);
+    setTemperature(params.temperature);
+    setMaterial(params.material);
+    setCorrosionAllowance(params.corrosionAllowance);
+    setGasketMaterial(params.gasketMaterial);
+    setGasketThickness(params.gasketThickness);
+    setGasketFacing(params.gasketFacing);
+    setFrictionPreset(params.frictionPreset);
+    setTighteningMethod(params.tighteningMethod);
+    setFastenerStandard(params.fastenerStandard);
+    setFastenerType(params.fastenerType);
+    setFastenerGradeId(params.fastenerGradeId);
+    setDesignConfig(params.designConfig ?? null);
+    setIsUserDefined(params.isUserDefined);
+
+    const importedTag = migrated.tag || params.flangeTag || '';
+    if (importedTag) {
+      setFlangeTag(importedTag);
+      setIsTagUserDefined(true);
+    } else {
+      setIsTagUserDefined(false);
+    }
+    setCustomResult(null);
+    setManualCheckResult(null);
+    setGeometryMatchNote(undefined);
+  }, []);
 
   const handleFlangeTagChange = useCallback((value: string) => {
     setFlangeTag(value);

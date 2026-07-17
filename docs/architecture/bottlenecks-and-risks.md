@@ -163,16 +163,20 @@ See [Testing and Quality](../development/testing-and-quality.md).
 | Field | Value |
 | --- | --- |
 | Priority | Medium |
-| Status | Open |
+| Status | Resolved |
 | Area | Persistence / Export |
+| Resolved in | `src/state/configurationFile.ts` (`migrateConfig`), `src/history/configurationHistoryStore.ts` |
 
 **Symptom.** Config files and IndexedDB entries use `schema: 'blind-flange-calculator-config', version: 1` with defensive import defaults, but no explicit migration functions for future breaking changes.
 
-**Follow-up.**
+**Resolution.**
 
-1. Add `migrateConfig(file) -> currentVersion` with per-version transformers.
-2. Version IndexedDB records and migrate on read.
-3. Keep import validation allow-lists.
+- `CURRENT_CONFIG_VERSION` and `migrateConfig(value): BlindFlangeConfigurationFile` added to `configurationFile.ts`. It validates `schema`/`parameters`, defaults a missing `version` to `1`, walks a per-version `MIGRATIONS` ladder (currently only v1, normalizing to the current shape via the existing `requiredNumber`/`requiredString`/`parseDesignConfig` defaults), and throws a clear `Error` for unrecognized schema or an unsupported future version.
+- `useBlindFlangeCalculatorState.ts`'s `handleImportConfiguration` now calls `migrateConfig(value)` once and applies the already-normalized parameters directly, removing the duplicated per-field validation.
+- `configurationHistoryStore.ts`'s `getAllHistoryEntries` migrates each entry's `config` via `migrateConfig` on read; a migration failure logs a soft warning and keeps the raw config instead of throwing, so history browsing never breaks on an old/odd record.
+- Unit tests in `src/__tests__/configurationMigrate.test.ts` cover valid v1 input, a missing `version` field, dn normalization, invalid schema, missing/invalid `parameters`, non-object input, and rejection of a newer unsupported version.
+
+**Follow-up (optional).** When a real v2 shape change lands, add a `MIGRATIONS[2]` transformer (v1 params → v2 params) and bump `CURRENT_CONFIG_VERSION`; keep the v1 transformer for backward compatibility.
 
 ---
 
@@ -181,18 +185,21 @@ See [Testing and Quality](../development/testing-and-quality.md).
 | Field | Value |
 | --- | --- |
 | Priority | Medium |
-| Status | Open |
+| Status | Resolved |
 | Area | Standards data |
+| Resolved in | `src/data.ts` (`STANDARDS_PROVENANCE`, placeholder quarantine) |
 
 **Symptom.** Most of `data.ts` (materials, EN 1092 table, gasket m/y) lacks source citations. Fastener entries are partially annotated; `EN_25CrMo4` remains an explicit placeholder (`isPlaceholder`) still selectable in the catalog.
 
 **Why it matters.** Engineering auditability and trust. Placeholder grades can confuse users even when checks are blocked.
 
-**Follow-up.**
+**Resolution.**
 
-1. Add `source` / `edition` / `notes` metadata to every table family.
-2. Remove or clearly quarantine placeholder fasteners from the default UI catalog.
-3. Document lookup rules in [Mathematical Model](../development/mathematical-model.md).
+- `STANDARDS_PROVENANCE` (in `data.ts`) documents source/edition/notes for each table family: `materials` (EN 10028-2/-7, ASME SA-516/SA-240 — screening subset), `en1092` (EN 1092-1 — embedded DN/PN subset), `gaskets` (supplier-typical m/y screening heuristics), `fasteners` (per-entry `source`/`notes`, ISO 898-1 / ISO 3506-1 / ASME SA193).
+- `EN_8.8`, `EN_10.9`, and `EN_A2-70` previously cited `source: 'Existing dataset'`; now cite the applicable standard (`ISO 898-1` / `ISO 3506-1`) with a `notes` line matching the pattern already used by `EN_5.6`/`EN_A4-70`. `EN_25CrMo4`'s `source` changed from `'TODO'` to `'Placeholder — not for design use'`.
+- `getFastenerOptions`/`getFastenerOptionsFor` now exclude `isPlaceholder: true` entries by default (quarantined from the default UI catalog) and accept an `includePlaceholders = false` parameter so calculation code (or a legacy config/history import) can still resolve a placeholder by id. `EN_25CrMo4` stays in `FASTENER_CATALOG` — `getFastenerCatalogEntry`/`resolveFastenerSelection` are unaffected and still resolve any id directly. `InputForm.tsx`'s grade dropdown keeps a currently-selected placeholder visible (so an imported legacy config doesn't show a blank/mismatched `<select>`) without adding it back to the general option list.
+
+**Follow-up (optional).** Document lookup rules in [Mathematical Model](../development/mathematical-model.md) if that page is expanded.
 
 ---
 
@@ -241,7 +248,7 @@ When capacity is limited, tackle remaining bottlenecks in this order:
 3. ~~**B-02** state boundary~~ (Resolved)
 4. ~~**B-03** shared PDF export module~~ (Resolved)
 5. ~~**B-05** CAD timeout/cancel~~ (Resolved) / **B-06** facing features
-6. ~~**B-07**~~ (Resolved) / **B-08 / B-09** schema + standards provenance
+6. ~~**B-07**~~ (Resolved) / ~~**B-08 / B-09** schema + standards provenance~~ (Resolved)
 7. **B-10 / B-11** structure and CI hygiene
 
 Update this file when an item is mitigated or resolved. Cross-link resolved items from [Future Development Roadmap](../development/future-development-roadmap.md).

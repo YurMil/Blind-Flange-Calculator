@@ -33,14 +33,14 @@ Located under `apps/blind-flange-calculator/src/state/`.
 
 | File | Responsibility |
 | --- | --- |
-| `useBlindFlangeCalculatorState.ts` | Owns all `useState`/`useEffect`/`useMemo`/`useCallback` orchestration (inputs, derived results, PN forcing, hydrotest auto-pressure, custom DN matching, design-config sync, debounced history autosave, import/export handlers). Exposes a single hook consumed by `BlindFlangeCalculator.tsx`. Also exports `MAX_STANDARD_PN`. |
-| `configurationFile.ts` | `BlindFlangeConfigurationFile` schema type, JSON-import parsing/validation helpers (`isRecord`, `optionalNumber`, `requiredNumber`, `requiredString`, `parseDesignConfig`, `resolveImportedDn`), `createDefaultFlangeTag`, and `MATERIAL_IDS`. |
+| `useBlindFlangeCalculatorState.ts` | Owns all `useState`/`useEffect`/`useMemo`/`useCallback` orchestration (inputs, derived results, PN forcing, hydrotest auto-pressure, custom DN matching, design-config sync, debounced history autosave, import/export handlers). Exposes a single hook consumed by `BlindFlangeCalculator.tsx`. Also exports `MAX_STANDARD_PN`. `handleImportConfiguration` delegates schema validation/normalization to `migrateConfig`. |
+| `configurationFile.ts` | `BlindFlangeConfigurationFile` schema type, `CURRENT_CONFIG_VERSION`, `migrateConfig(value)` (validate + per-version migration ladder → current shape), JSON-import parsing helpers (`isRecord`, `optionalNumber`, `requiredNumber`, `requiredString`, `parseDesignConfig`, `resolveImportedDn`), `createDefaultFlangeTag`, and `MATERIAL_IDS`. See [B-08](bottlenecks-and-risks.md#b-08--configuration-schema-has-no-migration-path). |
 
 ## Domain and Standards Modules
 
 | File | Responsibility |
 | --- | --- |
-| `src/data.ts` | Materials, EN 1092-1 dimension table, gasket options, fastener catalog, standard thicknesses |
+| `src/data.ts` | Materials, EN 1092-1 dimension table, gasket options, fastener catalog, standard thicknesses, `STANDARDS_PROVENANCE` (source/edition/notes per data family — see [B-09](bottlenecks-and-risks.md#b-09--weak-provenance-on-standards-tables)). `getFastenerOptions`/`getFastenerOptionsFor` exclude `isPlaceholder` entries (e.g. `EN_25CrMo4`) by default; pass `includePlaceholders: true` to resolve one by id. |
 | `src/bfTypes.ts` | Shared domain types for inputs/results |
 | `src/allowables.ts` | Allowable stress from yield/γ; hydrotest pressure helpers (EN / ASME style) |
 | `src/gasket.ts` | Standard and custom gasket effective diameter/width heuristics |
@@ -116,8 +116,10 @@ Configuration schema:
 
 ```text
 schema: 'blind-flange-calculator-config'
-version: 1
+version: 1  (CURRENT_CONFIG_VERSION in configurationFile.ts)
 ```
+
+`getAllHistoryEntries` migrates each entry's stored `config` via `migrateConfig` on read (best-effort; a failed migration logs a warning and keeps the raw config instead of throwing).
 
 ## Build Scripts
 

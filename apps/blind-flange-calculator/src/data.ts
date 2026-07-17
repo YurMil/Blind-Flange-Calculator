@@ -8,6 +8,51 @@ import type {
   MaterialCatalog,
 } from './bfTypes';
 
+export type StandardsProvenanceEntry = {
+  family: 'materials' | 'en1092' | 'gaskets' | 'fasteners';
+  label: string;
+  source: string;
+  edition?: string;
+  notes: string;
+};
+
+/**
+ * Source/edition/notes metadata for each standards-data family baked into
+ * this calculator. This is a screening tool, not a certified design
+ * reference — see the per-family `notes` for what to verify before final
+ * design use. See B-09 in `docs/architecture/bottlenecks-and-risks.md`.
+ */
+export const STANDARDS_PROVENANCE: StandardsProvenanceEntry[] = [
+  {
+    family: 'materials',
+    label: 'Plate/pipe materials (yield vs. temperature)',
+    source: 'EN 10028-2, EN 10028-7 (stainless), ASME SA-516 / SA-240',
+    notes:
+      'Yield-by-temperature values are a screening subset compiled for early sizing, not a reproduction of the full standard tables. Confirm against the certified material test report (MTR) and the current standard edition before final design.',
+  },
+  {
+    family: 'en1092',
+    label: 'EN 1092-1 flange dimensions (D / k / bolts / hole size)',
+    source: 'EN 1092-1 (steel flanges, PN designated)',
+    notes:
+      'Embedded subset of the standard covering the DN/PN combinations this calculator supports; not a full reproduction of the standard. Out-of-range or unlisted DN/PN pairs fall back to custom/manual geometry mode.',
+  },
+  {
+    family: 'gaskets',
+    label: 'Gasket m/y factors',
+    source: 'Supplier-typical screening values (non-mandatory ASME-style m/y heuristics)',
+    notes:
+      'm and y values are indicative screening heuristics for common gasket types, not certified manufacturer data. Confirm against the actual gasket supplier datasheet before final bolt-load calculations.',
+  },
+  {
+    family: 'fasteners',
+    label: 'Fastener grades (proof/yield/allowables)',
+    source: 'ISO 898-1, ISO 3506-1, ASME SA193 (see each catalog entry\'s `source` field)',
+    notes:
+      'Provenance is tracked per catalog entry via `source`/`notes`. Entries flagged `isPlaceholder` (e.g. `EN_25CrMo4`) are incomplete data stubs, excluded from the default UI catalog, and must not be used for design.',
+  },
+];
+
 export const MATERIALS: MaterialCatalog = {
   // --- EN 10028-2: Нелегированные и легированные стали для высоких температур ---
   P265GH: {
@@ -123,7 +168,8 @@ export const FASTENER_CATALOG: FastenerCatalogEntry[] = [
     yieldStressMPa: 640,
     allowableOp: 387,
     allowableTest: 527,
-    source: 'Existing dataset',
+    notes: 'ISO 898-1 class 8.8: Rm 800, ReL 640, Sp 580. Allowables derived as Sp/1.5 op, Sp/1.1 test.',
+    source: 'ISO 898-1',
   },
   {
     id: 'EN_10.9',
@@ -134,7 +180,8 @@ export const FASTENER_CATALOG: FastenerCatalogEntry[] = [
     yieldStressMPa: 940,
     allowableOp: 553,
     allowableTest: 755,
-    source: 'Existing dataset',
+    notes: 'ISO 898-1 class 10.9: Rm 1040, ReL 940, Sp 830. Allowables derived as Sp/1.5 op, Sp/1.1 test.',
+    source: 'ISO 898-1',
   },
   {
     id: 'EN_A2-70',
@@ -145,7 +192,8 @@ export const FASTENER_CATALOG: FastenerCatalogEntry[] = [
     yieldStressMPa: 450,
     allowableOp: 300,
     allowableTest: 409,
-    source: 'Existing dataset',
+    notes: 'ISO 3506-1 A2-70: Rm 700, Rp0.2 450 (used as proof).',
+    source: 'ISO 3506-1',
   },
   {
     id: 'EN_A4-70',
@@ -183,7 +231,7 @@ export const FASTENER_CATALOG: FastenerCatalogEntry[] = [
     allowableOp: 1,
     allowableTest: 1,
     notes: 'Material only. Define property class or provide proof/yield.',
-    source: 'TODO',
+    source: 'Placeholder — not for design use',
     isPlaceholder: true,
   },
   {
@@ -286,14 +334,24 @@ export const getFastenerEffectiveProps = (
   };
 };
 
-export const getFastenerOptions = (standard: FastenerStandard): FastenerCatalogEntry[] =>
-  FASTENER_CATALOG.filter((entry) => entry.standard === standard);
+/**
+ * Fastener grades for a standard, quarantined from incomplete placeholder
+ * entries (e.g. `EN_25CrMo4`) by default. Pass `includePlaceholders: true`
+ * when calculation code needs to resolve a placeholder that an older saved
+ * configuration or history entry still references by id.
+ */
+export const getFastenerOptions = (
+  standard: FastenerStandard,
+  includePlaceholders = false,
+): FastenerCatalogEntry[] =>
+  FASTENER_CATALOG.filter((entry) => entry.standard === standard && (includePlaceholders || !entry.isPlaceholder));
 
 export const getFastenerOptionsFor = (
   standard: FastenerStandard,
   type?: FastenerType,
+  includePlaceholders = false,
 ): FastenerCatalogEntry[] => {
-  const options = getFastenerOptions(standard);
+  const options = getFastenerOptions(standard, includePlaceholders);
   if (!type) return options;
   const filtered = options.filter((entry) => entry.type === type);
   return filtered.length > 0 ? filtered : options;

@@ -1,3 +1,5 @@
+import {migrateConfig} from '../state/configurationFile';
+
 export type HistoryEntrySource = 'manual' | 'live';
 
 export type ConfigurationHistorySummary = {
@@ -73,7 +75,25 @@ const withStore = async <TResult,>(
   });
 };
 
-export const getAllHistoryEntries = () => withStore<HistoryEntry[]>('readonly', (store) => store.getAll());
+/**
+ * Best-effort migration of a history entry's stored `config` to the current
+ * schema/shape. Older records (or ones written by a future/incompatible
+ * build) that fail to migrate are returned unchanged rather than dropped —
+ * the raw config is still useful for display/restore and re-export.
+ */
+const migrateEntryConfig = (entry: HistoryEntry): HistoryEntry => {
+  try {
+    return {...entry, config: migrateConfig(entry.config)};
+  } catch (error) {
+    console.warn(`[configurationHistoryStore] Could not migrate history entry "${entry.id}"; keeping raw config.`, error);
+    return entry;
+  }
+};
+
+export const getAllHistoryEntries = async (): Promise<HistoryEntry[]> => {
+  const entries = await withStore<HistoryEntry[]>('readonly', (store) => store.getAll());
+  return entries.map(migrateEntryConfig);
+};
 
 const notifyHistoryChanged = () => {
   if (typeof window !== 'undefined') {
