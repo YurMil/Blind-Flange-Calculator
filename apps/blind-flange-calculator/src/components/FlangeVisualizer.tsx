@@ -321,7 +321,7 @@ export default function FlangeVisualizer({
         <LegendSwatch stroke={STROKE.hole} label="Bolt holes" />
       </div>
 
-      <div className="mt-4 grid gap-2 text-xs text-slate-300 sm:grid-cols-3">
+      <div className="mt-4 grid gap-2 text-xs text-slate-300 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <span className="text-slate-500">Outer D</span>
           <p className="font-semibold text-slate-100">{dims.D} mm</p>
@@ -329,6 +329,10 @@ export default function FlangeVisualizer({
         <div>
           <span className="text-slate-500">Bolt circle K</span>
           <p className="font-semibold text-slate-100">{dims.k} mm</p>
+        </div>
+        <div>
+          <span className="text-slate-500">Hole diameter d2</span>
+          <p className="font-semibold text-slate-100">{dims.d2} mm</p>
         </div>
         <div>
           <span className="text-slate-500">Rec. plate thickness</span>
