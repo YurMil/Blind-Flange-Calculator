@@ -1,6 +1,10 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 import type {BlindFlangeCadGeometry} from '../types/cad-types';
-import {generateStepInWorker, warmupCadWorker} from '../services/cad-worker-client';
+import {
+  CadWorkerError,
+  generateStepInWorker,
+  warmupCadWorker,
+} from '../services/cad-worker-client';
 import type {BlindFlangeWorkerProgress} from '../services/cad-worker-protocol';
 
 type WorkerStatus = 'idle' | 'warming' | 'ready' | 'error';
@@ -11,7 +15,11 @@ export type UseBlindFlangeCadResult = {
   warmupWorker: () => Promise<void>;
   generateStep: (
     geometry: BlindFlangeCadGeometry,
-    options?: {onProgress?: (message: BlindFlangeWorkerProgress) => void},
+    options?: {
+      onProgress?: (message: BlindFlangeWorkerProgress) => void;
+      signal?: AbortSignal;
+      timeoutMs?: number;
+    },
   ) => Promise<ArrayBuffer>;
 };
 
@@ -36,6 +44,10 @@ export const useBlindFlangeCad = (): UseBlindFlangeCadResult => {
       await warmupCadWorker();
       setWorkerStatus('ready');
     } catch (error) {
+      if (error instanceof CadWorkerError && error.code === 'cancelled') {
+        setWorkerStatus('idle');
+        return;
+      }
       const message = error instanceof Error ? error.message : String(error);
       setWorkerError(message);
       setWorkerStatus('error');
@@ -58,7 +70,11 @@ export const useBlindFlangeCad = (): UseBlindFlangeCadResult => {
   const generateStep = useCallback(
     async (
       geometry: BlindFlangeCadGeometry,
-      options?: {onProgress?: (message: BlindFlangeWorkerProgress) => void},
+      options?: {
+        onProgress?: (message: BlindFlangeWorkerProgress) => void;
+        signal?: AbortSignal;
+        timeoutMs?: number;
+      },
     ) => {
       if (workerStatus !== 'ready') {
         await warmupWorker();

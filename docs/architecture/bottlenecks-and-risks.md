@@ -56,18 +56,17 @@ Priority is relative engineering risk, not a delivery commitment.
 | Field | Value |
 | --- | --- |
 | Priority | Medium |
-| Status | Open |
+| Status | Resolved |
 | Area | Export |
+| Resolved in | `apps/blind-flange-calculator/src/export/pdf/` |
 
-**Symptom.** `exportUtils.ts` and `manualPdfReport.ts` each implement report layout helpers and formatting conventions. Drawing primitives for the technical sheet live only in the standard report path.
+**Symptom.** `exportUtils.ts` and `manualPdfReport.ts` each implemented report layout helpers and formatting conventions. Drawing primitives for the technical sheet lived only in the standard report path.
 
-**Why it matters.** Visual/format drift between standard and manual PDFs; duplicated bug fixes; larger review surface.
+**Resolution.** Shared layout/formatting/drawing primitives now live in `src/export/pdf/pdfPrimitives.ts` (`toFixed`, `fmt`, `drawSectionHeader`, `drawField`, `drawWrapped`, `drawBar`, `drawKeyValueRows`), with document setup centralized in `src/export/pdf/pdfDoc.ts` (`createPdfDoc()`, dynamic `jspdf` import, shared 15mm margin). The standard/custom report builder (`standardReport.ts`) and manual-check report builder (`manualReport.ts`) each assemble content with these primitives and return a `Blob`; `index.ts` dispatches between them and owns the filename/download step. `exportUtils.ts` re-exports `exportPdfReport` from `./export/pdf` and keeps only the DXF builders and `downloadTextFile`. `manualPdfReport.ts` was deleted.
 
-**Follow-up.**
+**Intentional behavior note.** The manual report's page margin changed from 14mm to 15mm to match the standard report (both now use `PDF_MARGIN_MM = 15` from `pdfDoc.ts`), shifting manual-report layout by ~1mm.
 
-1. Create `src/export/pdf/` with shared layout, formatting, and drawing helpers.
-2. Keep report *content assembly* separate from *jsPDF rendering*.
-3. Reuse calculated result objects; never recalculate inside export code.
+**Follow-up (optional).** Move DXF builders (`buildDxf`, `buildDxfFromManual`) out of `exportUtils.ts` into a sibling `src/export/dxf/` module for full parity with the PDF split.
 
 ---
 
@@ -102,19 +101,20 @@ See [Testing and Quality](../development/testing-and-quality.md).
 | Field | Value |
 | --- | --- |
 | Priority | Medium |
-| Status | Mitigated (progress events exist; no timeout/cancel) |
+| Status | Resolved |
 | Area | CAD |
+| Resolved in | `cad-worker-client.ts` timeouts + AbortSignal cancel; Cancel button in `StepExportPanel` |
 
-**Symptom.** `cad-worker-client.ts` tracks pending requests but has no request timeout or cancellation protocol. A hung WASM init or STEP export can leave the UI in a perpetual generating state. Worker `error` rejects all pending requests.
+**Symptom.** CAD worker client tracked pending requests but had no request timeout or cancellation protocol.
 
-**Follow-up.**
+**Resolution.**
 
-1. Add timeout + typed error responses.
-2. Add cancel message and abort pending UI state.
-3. Keep geometry validation before WASM work (already present — preserve).
-4. Document facing-feature MVP limits in UI (partially present in `StepExportPanel`).
+- `CadWorkerError` with codes `timeout` | `cancelled` | `worker`
+- Default timeouts: warmup 90s, STEP generation 120s
+- `AbortSignal` support; abort terminates and recreates the worker
+- UI Cancel control while generating STEP
 
-**Related.** [Plane 3D STEP Generation Spec](<../Plane%203D%20STEP%20Generation%20for%20BlindFlangeCalculator.md>).
+**Still open.** Facing features remain MVP stubs — see **B-06**.
 
 ---
 
@@ -239,8 +239,8 @@ When capacity is limited, tackle remaining bottlenecks in this order:
 1. ~~**B-04** tests for existing formulas~~ (Mitigated — unit + CI done; component/Playwright deferred)
 2. ~~**B-01** shared plate physics~~ (Resolved)
 3. ~~**B-02** state boundary~~ (Resolved)
-4. **B-03** shared PDF export module
-5. **B-05 / B-06** CAD hardening and facing features
+4. ~~**B-03** shared PDF export module~~ (Resolved)
+5. ~~**B-05** CAD timeout/cancel~~ (Resolved) / **B-06** facing features
 6. ~~**B-07**~~ (Resolved) / **B-08 / B-09** schema + standards provenance
 7. **B-10 / B-11** structure and CI hygiene
 

@@ -1,9 +1,10 @@
-import {useMemo, useState} from 'react';
-import {Box, Download, Loader2} from 'lucide-react';
+import {useMemo, useRef, useState} from 'react';
+import {Box, Download, Loader2, X} from 'lucide-react';
 import type {CalculationInput} from '../bfTypes';
 import type {BlindFlangeCadSource} from '../cad/types/cad-types';
 import {computeBlindFlangeCadGeometry} from '../cad/geometry/compute-flange-geometry';
 import {useBlindFlangeCad} from '../cad/hooks/useBlindFlangeCad';
+import {CadWorkerError} from '../cad/services/cad-worker-client';
 import type {BlindFlangeWorkerProgress} from '../cad/services/cad-worker-protocol';
 
 type Props = {
@@ -47,13 +48,26 @@ export default function StepExportPanel({source, input, targetPN}: Props) {
   const [statusText, setStatusText] = useState('');
   const [errorText, setErrorText] = useState<string | null>(null);
   const [successText, setSuccessText] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   const hasGeometrySource = useMemo(
     () => Boolean(source.designConfig || source.customResult || source.result),
     [source.customResult, source.designConfig, source.result],
   );
 
+  const handleCancel = () => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setIsGenerating(false);
+    setStatusText('');
+    setErrorText('STEP generation cancelled.');
+  };
+
   const handleDownloadStep = async () => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setIsGenerating(true);
     setErrorText(null);
     setSuccessText(null);
@@ -62,6 +76,7 @@ export default function StepExportPanel({source, input, targetPN}: Props) {
     try {
       const geometry = computeBlindFlangeCadGeometry(source);
       const step = await generateStep(geometry, {
+        signal: controller.signal,
         onProgress: (message) => {
           setStatusText(getProgressLabel(message));
         },
@@ -71,10 +86,19 @@ export default function StepExportPanel({source, input, targetPN}: Props) {
       setSuccessText('STEP file generated successfully.');
       setStatusText('Done');
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      setErrorText(message);
+      if (error instanceof CadWorkerError && error.code === 'cancelled') {
+        setErrorText('STEP generation cancelled.');
+      } else if (error instanceof CadWorkerError && error.code === 'timeout') {
+        setErrorText(error.message);
+      } else {
+        const message = error instanceof Error ? error.message : String(error);
+        setErrorText(message);
+      }
       setStatusText('');
     } finally {
+      if (abortRef.current === controller) {
+        abortRef.current = null;
+      }
       setIsGenerating(false);
     }
   };
@@ -107,15 +131,27 @@ export default function StepExportPanel({source, input, targetPN}: Props) {
             <p className="mt-0.5 text-xs text-slate-400">{helperText}</p>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={handleDownloadStep}
-          disabled={!hasGeometrySource || isGenerating}
-          className="flex shrink-0 items-center gap-2 rounded-xl border border-emerald-400/40 bg-emerald-500/10 px-3 py-2 text-sm font-semibold text-emerald-100 transition hover:border-emerald-300 hover:bg-emerald-500/20 disabled:cursor-not-allowed disabled:border-slate-800 disabled:bg-slate-900/60 disabled:text-slate-500"
-        >
-          {isGenerating ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-          <span>{isGenerating ? 'Generating STEP...' : 'Download STEP'}</span>
-        </button>
+        <div className="flex shrink-0 items-center gap-2">
+          {isGenerating ? (
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="flex items-center gap-2 rounded-xl border border-slate-600 bg-slate-900/80 px-3 py-2 text-sm font-semibold text-slate-200 transition hover:border-amber-400/50 hover:bg-slate-800"
+            >
+              <X size={16} />
+              <span>Cancel</span>
+            </button>
+          ) : null}
+          <button
+            type="button"
+            onClick={handleDownloadStep}
+            disabled={!hasGeometrySource || isGenerating}
+            className="flex items-center gap-2 rounded-xl border border-emerald-400/40 bg-emerald-500/10 px-3 py-2 text-sm font-semibold text-emerald-100 transition hover:border-emerald-300 hover:bg-emerald-500/20 disabled:cursor-not-allowed disabled:border-slate-800 disabled:bg-slate-900/60 disabled:text-slate-500"
+          >
+            {isGenerating ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+            <span>{isGenerating ? 'Generating STEP...' : 'Download STEP'}</span>
+          </button>
+        </div>
       </div>
 
       {errorText || workerError ? (

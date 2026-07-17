@@ -1,36 +1,25 @@
-import {getFastenerCatalogEntry, getFastenerEffectiveProps} from './data';
+import {getFastenerCatalogEntry, getFastenerEffectiveProps} from '../../data';
 import {
   EDGE_CLEARANCE_MIN_MM,
   FASTENER_GAP_MIN_MM,
   getFastenerFeatureOD,
   getFastenerGeometry,
-} from './bolting';
-import type {CalculationInput} from './bfTypes';
-import type {ManualCheckResult} from './manualCheckTypes';
+} from '../../bolting';
+import type {CalculationInput} from '../../bfTypes';
+import type {ManualCheckResult} from '../../manualCheckTypes';
+import {createPdfDoc} from './pdfDoc';
+import {toFixed, fmt, drawSectionHeader, drawField, drawWrapped, drawBar, drawKeyValueRows} from './pdfPrimitives';
 import {sanitizePdfText} from './pdfText';
-import {downloadBlob} from './download';
 
-const toFixed = (value: number, digits = 2) => Number.parseFloat(value.toFixed(digits));
-
-const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
-
-const fmt = {
-  mm: (v: number, digits = 1) => `${toFixed(v, digits)} mm`,
-  bar: (v: number, digits = 1) => `${toFixed(v, digits)} bar`,
-  mm2: (v: number, digits = 0) => `${toFixed(v, digits)} mm^2`,
-  n: (v: number, digits = 0) => `${toFixed(v, digits)} N`,
-  kn: (v: number, digits = 1) => `${toFixed(v / 1000, digits)} kN`,
-  nm: (v: number, digits = 0) => `${toFixed(v, digits)} N*m`,
-  pct: (u: number, digits = 0) => `${toFixed(u * 100, digits)}%`,
-};
-
-export async function exportManualPdfReport(params: {
+export interface ManualReportParams {
   input: CalculationInput;
   targetPN: number;
   manualCheck: ManualCheckResult;
-}) {
-  const {jsPDF} = await import('jspdf');
-  const doc = new jsPDF();
+}
+
+/** Builds the manual-check calculation report and returns it as a PDF blob. */
+export async function renderManualReport(params: ManualReportParams): Promise<Blob> {
+  const {doc, pageWidth, pageHeight, margin, contentWidth} = await createPdfDoc();
 
   const {input, targetPN, manualCheck} = params;
   const manual = manualCheck.manualInput;
@@ -38,59 +27,7 @@ export async function exportManualPdfReport(params: {
   const gasketSummary = manualCheck.gasketSummary;
   const thicknessSummary = manualCheck.thicknessSummary;
 
-  // -- Setup & Constants --
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = 14;
-  const contentWidth = pageWidth - margin * 2;
   let cursorY = margin;
-
-  const drawSectionHeader = (title: string, y: number) => {
-    doc.setFillColor(240, 240, 240);
-    doc.rect(margin, y, contentWidth, 7, 'F');
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(0);
-    doc.text(sanitizePdfText(title.toUpperCase()), margin + 2, y + 5);
-    return y + 9;
-  };
-
-  const drawField = (label: string, value: string, x: number, y: number, width: number) => {
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(80);
-    doc.text(sanitizePdfText(label), x, y);
-    doc.setTextColor(0);
-    doc.setFont('helvetica', 'bold');
-    doc.text(sanitizePdfText(value), x + width, y, {align: 'right'});
-  };
-
-  const drawWrapped = (text: string, x: number, y: number, width: number, fontSize = 9) => {
-    doc.setFontSize(fontSize);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(0);
-    const safeText = sanitizePdfText(text);
-    const lines = doc.splitTextToSize(safeText, width) as string[];
-    doc.text(lines, x, y);
-    return y + lines.length * (fontSize * 0.35 + 1.5);
-  };
-
-  const drawBar = (label: string, utilization: number, x: number, y: number, width: number) => {
-    const normalized = Number.isFinite(utilization) ? utilization : 0;
-    const pct = clamp(normalized * 100, 0, 300);
-    const fillWidth = clamp(normalized, 0, 1) * width;
-    const color = pct < 90 ? [60, 179, 113] : pct < 110 ? [255, 193, 7] : [244, 67, 54];
-    doc.setFontSize(9);
-    doc.setTextColor(60);
-    doc.text(sanitizePdfText(label), x, y + 4);
-    doc.setFillColor(color[0], color[1], color[2]);
-    doc.rect(x, y + 6, fillWidth, 5, 'F');
-    doc.setDrawColor(60);
-    doc.rect(x, y + 6, width, 5);
-    doc.setTextColor(0);
-    doc.text(sanitizePdfText(`${pct.toFixed(0)}%`), x + width, y + 4, {align: 'right'});
-  };
-
   const dateStr = new Date().toLocaleDateString();
 
   // ---------------- Page 1: Summary ----------------
@@ -111,11 +48,11 @@ export async function exportManualPdfReport(params: {
   doc.text(sanitizePdfText(`Reference: DN${input.dn} / PN${targetPN}`), pageWidth - margin, cursorY, {align: 'right'});
   cursorY += 8;
 
-  cursorY = drawSectionHeader('Design inputs', cursorY);
+  cursorY = drawSectionHeader(doc, 'Design inputs', cursorY, margin, contentWidth);
   const gasketLabel = `${input.gasketFacing} / ${input.gasketMaterial} / ${input.gasketThickness} mm`;
   const pTestAuto = manualCheck.pressureTestAuto ?? 0;
   const pTestUsed = manualCheck.pressureTestUsed ?? input.pressureTest;
-  const inputs = [
+  const inputs: Array<[string, string]> = [
     ['Nominal size', `DN ${input.dn}`],
     ['Operating pressure (P_op)', fmt.bar(input.pressureOp)],
     ['Test pressure used (P_test)', fmt.bar(pTestUsed)],
@@ -124,14 +61,9 @@ export async function exportManualPdfReport(params: {
     ['Material', input.material],
     ['Gasket', gasketLabel],
   ];
-  inputs.forEach(([k, v], idx) => {
-    drawField(k, v, margin + 2, cursorY + 4 + idx * 6, contentWidth - 4);
-    doc.setDrawColor(230);
-    doc.line(margin, cursorY + 6 + idx * 6, margin + contentWidth, cursorY + 6 + idx * 6);
-  });
-  cursorY += inputs.length * 6 + 6;
+  cursorY = drawKeyValueRows(doc, inputs, margin, cursorY, contentWidth) + 6;
 
-  cursorY = drawSectionHeader('Manual inputs', cursorY);
+  cursorY = drawSectionHeader(doc, 'Manual inputs', cursorY, margin, contentWidth);
   const manualRows: Array<[string, string]> = [];
   if (manual) {
     const entry = getFastenerCatalogEntry(manual.fastenerGradeId);
@@ -155,14 +87,9 @@ export async function exportManualPdfReport(params: {
   } else {
     manualRows.push(['Manual input', 'n/a']);
   }
-  manualRows.forEach(([k, v], idx) => {
-    drawField(k, v, margin + 2, cursorY + 4 + idx * 6, contentWidth - 4);
-    doc.setDrawColor(230);
-    doc.line(margin, cursorY + 6 + idx * 6, margin + contentWidth, cursorY + 6 + idx * 6);
-  });
-  cursorY += manualRows.length * 6 + 6;
+  cursorY = drawKeyValueRows(doc, manualRows, margin, cursorY, contentWidth) + 6;
 
-  cursorY = drawSectionHeader('Status and key results', cursorY);
+  cursorY = drawSectionHeader(doc, 'Status and key results', cursorY, margin, contentWidth);
   const passLabel = manualCheck.pass ? 'PASS' : 'FAIL';
   const governingCase = manualCheck.governingCase ?? 'n/a';
   const governingCode = manualCheck.governingCode ?? 'n/a';
@@ -207,28 +134,24 @@ export async function exportManualPdfReport(params: {
       ['Gasket mean dia (G_eff)', fmt.mm(gasketSummary.gasketMeanDiameter, 1)],
       ['Gasket effective width (b_eff)', fmt.mm(gasketSummary.gasketWidth, 1)],
       ['Gasket ID / OD', `${gasketSummary.gasketId ?? 'n/a'} / ${gasketSummary.gasketOd ?? 'n/a'} mm`],
-      ['Gasket loads (Wm1 / Wm2_op / Wm2_hydro)', `${fmt.n(gasketSummary.Wm1)} / ${fmt.n(
-        gasketSummary.Wm2_op,
-      )} / ${fmt.n(gasketSummary.Wm2_hydro)}`],
+      [
+        'Gasket loads (Wm1 / Wm2_op / Wm2_hydro)',
+        `${fmt.n(gasketSummary.Wm1)} / ${fmt.n(gasketSummary.Wm2_op)} / ${fmt.n(gasketSummary.Wm2_hydro)}`,
+      ],
     );
   }
-  keyRows.forEach(([k, v], idx) => {
-    drawField(k, v, margin + 2, cursorY + 4 + idx * 6, contentWidth - 4);
-    doc.setDrawColor(230);
-    doc.line(margin, cursorY + 6 + idx * 6, margin + contentWidth, cursorY + 6 + idx * 6);
-  });
-  cursorY += keyRows.length * 6 + 4;
+  cursorY = drawKeyValueRows(doc, keyRows, margin, cursorY, contentWidth) + 4;
 
   if (manualCheck.errors.length > 0) {
-    cursorY = drawSectionHeader('Issues', cursorY);
+    cursorY = drawSectionHeader(doc, 'Issues', cursorY, margin, contentWidth);
     const issuesText = manualCheck.errors.map((e) => `- ${e}`).join('\n');
-    cursorY = drawWrapped(issuesText, margin + 2, cursorY + 2, contentWidth - 4, 8) + 2;
+    cursorY = drawWrapped(doc, issuesText, margin + 2, cursorY + 2, contentWidth - 4, 8) + 2;
   }
 
   // ---------------- Page 2: Sketch ----------------
   doc.addPage();
   cursorY = margin;
-  cursorY = drawSectionHeader('Sketch (not to scale)', cursorY);
+  cursorY = drawSectionHeader(doc, 'Sketch (not to scale)', cursorY, margin, contentWidth);
 
   if (manual) {
     const dims = {
@@ -299,7 +222,7 @@ export async function exportManualPdfReport(params: {
   // ---------------- Page 3: Charts + Calculations ----------------
   doc.addPage();
   cursorY = margin;
-  cursorY = drawSectionHeader('Charts and calculations', cursorY);
+  cursorY = drawSectionHeader(doc, 'Charts and calculations', cursorY, margin, contentWidth);
 
   // Charts
   doc.setFontSize(9);
@@ -309,9 +232,9 @@ export async function exportManualPdfReport(params: {
   cursorY += 8;
 
   if (boltSummary) {
-    drawBar('Bolts - seating', boltSummary.areas.utilizationSeating, margin + 2, cursorY, contentWidth - 4);
-    drawBar('Bolts - operating', boltSummary.areas.utilizationOper, margin + 2, cursorY + 10, contentWidth - 4);
-    drawBar('Bolts - hydrotest', boltSummary.areas.utilizationHydro, margin + 2, cursorY + 20, contentWidth - 4);
+    drawBar(doc, 'Bolts - seating', boltSummary.areas.utilizationSeating, margin + 2, cursorY, contentWidth - 4);
+    drawBar(doc, 'Bolts - operating', boltSummary.areas.utilizationOper, margin + 2, cursorY + 10, contentWidth - 4);
+    drawBar(doc, 'Bolts - hydrotest', boltSummary.areas.utilizationHydro, margin + 2, cursorY + 20, contentWidth - 4);
     cursorY += 32;
   } else {
     doc.setFontSize(9);
@@ -320,7 +243,7 @@ export async function exportManualPdfReport(params: {
   }
 
   if (thicknessSummary) {
-    drawBar('Thickness - required+CA / provided', thicknessSummary.utilization, margin + 2, cursorY, contentWidth - 4);
+    drawBar(doc, 'Thickness - required+CA / provided', thicknessSummary.utilization, margin + 2, cursorY, contentWidth - 4);
     cursorY += 12;
   } else {
     doc.setFontSize(9);
@@ -329,7 +252,7 @@ export async function exportManualPdfReport(params: {
   }
 
   // Detailed calculations (tables)
-  cursorY = drawSectionHeader('Detailed values', cursorY + 2);
+  cursorY = drawSectionHeader(doc, 'Detailed values', cursorY + 2, margin, contentWidth);
 
   const colW = (contentWidth - 4) / 2;
   let leftY = cursorY + 2;
@@ -350,7 +273,7 @@ export async function exportManualPdfReport(params: {
     ['Clamped to P_op', manualCheck.pressureTestClamped ? 'YES' : 'NO'],
   ];
   pressureRows.forEach(([k, v]) => {
-    drawField(k, v, margin + 2, leftY, colW - 2);
+    drawField(doc, k, v, margin + 2, leftY, colW - 2);
     leftY += 6;
   });
   leftY += 2;
@@ -371,11 +294,11 @@ export async function exportManualPdfReport(params: {
       ['Wm2_hydro', fmt.n(gasketSummary.Wm2_hydro)],
     ];
     gasketRows.forEach(([k, v]) => {
-      drawField(k, v, margin + 2, leftY, colW - 2);
+      drawField(doc, k, v, margin + 2, leftY, colW - 2);
       leftY += 6;
     });
   } else {
-    leftY = drawWrapped('n/a', margin + 2, leftY, colW - 2, 9);
+    leftY = drawWrapped(doc, 'n/a', margin + 2, leftY, colW - 2, 9);
   }
 
   // Right column: geometry checks + bolting + thickness
@@ -415,11 +338,11 @@ export async function exportManualPdfReport(params: {
       ['Gap min', fmt.mm(FASTENER_GAP_MIN_MM, 1)],
     ];
     geoRows.forEach(([k, v]) => {
-      drawField(k, v, rightX, rightY, colW - 4);
+      drawField(doc, k, v, rightX, rightY, colW - 4);
       rightY += 6;
     });
   } else {
-    rightY = drawWrapped('n/a', rightX, rightY, colW - 4, 9);
+    rightY = drawWrapped(doc, 'n/a', rightX, rightY, colW - 4, 9);
   }
 
   rightY += 2;
@@ -440,14 +363,11 @@ export async function exportManualPdfReport(params: {
       ['A_req seating', fmt.mm2(boltSummary.areas.requiredAreaSeating)],
       ['A_req operating', fmt.mm2(boltSummary.areas.requiredAreaOper)],
       ['A_req hydrotest', fmt.mm2(boltSummary.areas.requiredAreaHydro)],
-      [
-        'Governing case',
-        `${boltSummary.governingCase} (${boltSummary.pass ? 'PASS' : 'FAIL'})`,
-      ],
+      ['Governing case', `${boltSummary.governingCase} (${boltSummary.pass ? 'PASS' : 'FAIL'})`],
       ['Proof/Yield', effective.proof > 1 ? `${effective.proof}/${effective.yield} MPa` : 'n/a'],
     ];
     boltRows.forEach(([k, v]) => {
-      drawField(k, v, rightX, rightY, colW - 4);
+      drawField(doc, k, v, rightX, rightY, colW - 4);
       rightY += 6;
     });
     if (torque) {
@@ -462,12 +382,12 @@ export async function exportManualPdfReport(params: {
         ['Case used', torque.governingCaseUsed],
       ];
       torqueRows.forEach(([k, v]) => {
-        drawField(k, v, rightX, rightY, colW - 4);
+        drawField(doc, k, v, rightX, rightY, colW - 4);
         rightY += 6;
       });
     }
   } else {
-    rightY = drawWrapped('n/a', rightX, rightY, colW - 4, 9);
+    rightY = drawWrapped(doc, 'n/a', rightX, rightY, colW - 4, 9);
   }
 
   rightY += 2;
@@ -488,14 +408,12 @@ export async function exportManualPdfReport(params: {
       ['Result', thicknessSummary.pass ? 'PASS' : 'FAIL'],
     ];
     thRows.forEach(([k, v]) => {
-      drawField(k, v, rightX, rightY, colW - 4);
+      drawField(doc, k, v, rightX, rightY, colW - 4);
       rightY += 6;
     });
   } else {
-    rightY = drawWrapped('n/a', rightX, rightY, colW - 4, 9);
+    rightY = drawWrapped(doc, 'n/a', rightX, rightY, colW - 4, 9);
   }
 
-  const fileSuffix = input.dn ? `DN${input.dn}` : 'DN';
-  const pdfBlob = doc.output('blob') as Blob;
-  downloadBlob(pdfBlob, `blind-flange-manual-check-${fileSuffix}-PN${targetPN}.pdf`);
+  return doc.output('blob') as Blob;
 }

@@ -82,7 +82,7 @@ src/cad/geometry/build-blind-flange-solid.ts  disk minus bolt holes (Replicad)
 src/cad/geometry/build-facing-features.ts     MVP stub (passthrough)
 src/cad/services/cad-worker-protocol.ts       typed worker messages
 src/cad/services/cad-worker.ts                WASM load + STEP blob
-src/cad/services/cad-worker-client.ts         main-thread Promise API
+src/cad/services/cad-worker-client.ts         main-thread Promise API (timeout, AbortSignal cancel, CadWorkerError)
 src/cad/hooks/useBlindFlangeCad.ts            React hook (warmup + generate)
 ```
 
@@ -94,10 +94,17 @@ MVP STEP solid is a flat disk with through bolt holes. Raised face / RTJ feature
 
 | File | Responsibility |
 | --- | --- |
-| `src/exportUtils.ts` | Standard/custom PDF report, DXF builders, drawing sheet helpers |
-| `src/manualPdfReport.ts` | Manual-check PDF report (parallel implementation) |
-| `src/pdfText.ts` | Unicode → WinAnsi sanitization for jsPDF fonts |
+| `src/exportUtils.ts` | Thin module: re-exports `exportPdfReport` from `src/export/pdf/`; keeps DXF builders (`buildDxf`, `buildDxfFromManual`) and `downloadTextFile` |
+| `src/export/pdf/pdfDoc.ts` | `createPdfDoc()` — dynamic `jspdf` import, shared 15mm margin, page-geometry constants |
+| `src/export/pdf/pdfPrimitives.ts` | Shared formatting/drawing helpers: `toFixed`, `fmt`, `drawSectionHeader`, `drawField`, `drawWrapped`, `drawBar`, `drawKeyValueRows` |
+| `src/export/pdf/pdfText.ts` | Re-exports `sanitizePdfText` from `src/pdfText.ts` for local use by report builders |
+| `src/export/pdf/standardReport.ts` | Standard/custom-sizing calculation report (data tables + technical drawing sheet) → `Blob` |
+| `src/export/pdf/manualReport.ts` | Manual-check calculation report (summary + sketch + charts/calculations pages) → `Blob` |
+| `src/export/pdf/index.ts` | `exportPdfReport()` dispatcher (manual vs. standard/custom) + filename + `downloadBlob` |
+| `src/pdfText.ts` | Unicode → WinAnsi sanitization for jsPDF fonts (canonical implementation) |
 | `src/download.ts` | Browser blob download helper |
+
+`exportPdfReport`, `buildDxf`, `buildDxfFromManual`, and `downloadTextFile` are still imported from `src/exportUtils.ts` by `ExportActions.tsx` — the public API is unchanged even though the PDF implementation moved. See [B-03](bottlenecks-and-risks.md#b-03--duplicated-pdf-report-engines).
 
 ## Persistence
 
