@@ -1,6 +1,75 @@
 import {useMemo} from 'react';
-import {Ruler} from 'lucide-react';
 import type {FlangeVisualizerProps} from '../domain/types/bfTypes';
+
+const VIEW = 320;
+const CENTER = VIEW / 2;
+const DRAW_DIAMETER = 220;
+
+const STROKE = {
+  outer: '#86efac',
+  gasket: '#7dd3fc',
+  boltCircle: '#fcd34d',
+  hole: '#e2e8f0',
+  dim: '#94a3b8',
+  plate: '#cbd5e1',
+} as const;
+
+const LegendSwatch = ({
+  stroke,
+  dash,
+  label,
+}: {
+  stroke: string;
+  dash?: string;
+  label: string;
+}) => (
+  <div className="flex items-center gap-2 text-xs text-slate-300">
+    <svg width="28" height="12" viewBox="0 0 28 12" aria-hidden="true" className="shrink-0">
+      <line
+        x1="1"
+        y1="6"
+        x2="27"
+        y2="6"
+        stroke={stroke}
+        strokeWidth="2.5"
+        strokeDasharray={dash}
+        strokeLinecap="round"
+      />
+    </svg>
+    <span>{label}</span>
+  </div>
+);
+
+function DimensionLine({
+  y,
+  halfLength,
+  label,
+}: {
+  y: number;
+  halfLength: number;
+  label: string;
+}) {
+  const left = CENTER - halfLength;
+  const right = CENTER + halfLength;
+  const tick = 5;
+  return (
+    <g aria-hidden="true">
+      <line x1={left} y1={y} x2={right} y2={y} stroke={STROKE.dim} strokeWidth={1} />
+      <line x1={left} y1={y - tick} x2={left} y2={y + tick} stroke={STROKE.dim} strokeWidth={1} />
+      <line x1={right} y1={y - tick} x2={right} y2={y + tick} stroke={STROKE.dim} strokeWidth={1} />
+      <text
+        x={CENTER}
+        y={y - 6}
+        textAnchor="middle"
+        fontSize="10"
+        fill={STROKE.dim}
+        fontWeight="600"
+      >
+        {label}
+      </text>
+    </g>
+  );
+}
 
 export default function FlangeVisualizer({
   dn,
@@ -25,130 +94,209 @@ export default function FlangeVisualizer({
 
   if (!dims) {
     return (
-      <div className="rounded-3xl border border-slate-800 bg-slate-950/40 p-6 text-center text-sm text-slate-400">
-        No EN 1092-1 data available for DN {dn}.
+      <div className="rounded-3xl border border-slate-800 bg-slate-950/40 p-6 shadow-lg shadow-slate-950/40">
+        <div className="flex items-center justify-between text-xs uppercase tracking-wide text-slate-400">
+          <span>Sketch</span>
+          <span>DN {dn}</span>
+        </div>
+        <p className="mt-4 text-sm text-slate-400">No EN 1092-1 data available for DN {dn}.</p>
       </div>
     );
   }
 
-  const viewBoxSize = 320;
-  const center = viewBoxSize / 2;
-  const scale = 240 / dims.D;
+  const scale = DRAW_DIAMETER / dims.D;
   const outerRadius = (dims.D / 2) * scale;
   const boltCircleRadius = (dims.k / 2) * scale;
-  const boltRadius = (dims.d2 / 2) * scale;
+  const boltRadius = Math.max((dims.d2 / 2) * scale, 2.5);
   const gasketOuterRadius = gasketOd ? (gasketOd / 2) * scale : null;
   const gasketInnerRadius = gasketId ? (gasketId / 2) * scale : null;
   const gasketMeanRadius = gasketMeanDiameter ? (gasketMeanDiameter / 2) * scale : null;
   const showUnknownGasket = !gasketOuterRadius && !gasketInnerRadius && !gasketMeanRadius;
+  const thicknessMm = recommendedThickness ?? 0;
+
+  // Side elevation: scale OD to a readable bar width; thickness exaggerated slightly for visibility.
+  const sideWidth = 160;
+  const sideScale = sideWidth / dims.D;
+  const sideThickness = Math.max(thicknessMm * sideScale * 2.2, thicknessMm > 0 ? 8 : 4);
+  const sideOd = dims.D * sideScale;
 
   return (
-    <div className="rounded-3xl border border-slate-800 bg-slate-950/40 p-6 shadow-lg shadow-slate-950/40">
-      <div className="flex items-center justify-between text-xs uppercase tracking-wide text-slate-400">
+    <div className="rounded-3xl border border-slate-800 bg-slate-950/40 p-4 shadow-lg shadow-slate-950/40 sm:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs uppercase tracking-wide text-slate-400">
         <span>Sketch</span>
-        <span>PN {selectedPN ?? '-'}</span>
+        <span>
+          DN {dn}
+          {selectedPN !== undefined ? ` · PN ${selectedPN}` : ''}
+        </span>
       </div>
-      <div className="mt-4 flex items-center justify-center">
-        <svg width="320" height="320" viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}>
-          <rect
-            x={1}
-            y={1}
-            width={viewBoxSize - 2}
-            height={viewBoxSize - 2}
-            rx={24}
-            fill="transparent"
-            stroke="rgba(148, 163, 184, 0.2)"
-          />
-          <circle
-            cx={center}
-            cy={center}
-            r={outerRadius}
-            fill="rgba(34, 197, 94, 0.1)"
-            stroke="rgba(34, 197, 94, 0.7)"
-            strokeWidth={2}
-          />
-          {gasketOuterRadius ? (
-            <circle
-              cx={center}
-              cy={center}
-              r={gasketOuterRadius}
-              fill="none"
-              stroke="rgba(14, 165, 233, 0.6)"
-              strokeDasharray="5 4"
-              strokeWidth={1.2}
-            />
-          ) : null}
-          {gasketInnerRadius ? (
-            <circle
-              cx={center}
-              cy={center}
-              r={gasketInnerRadius}
-              fill="none"
-              stroke="rgba(14, 165, 233, 0.35)"
-              strokeDasharray="3 3"
-              strokeWidth={1}
-            />
-          ) : null}
-          {!gasketOuterRadius && !gasketInnerRadius && gasketMeanRadius ? (
-            <circle
-              cx={center}
-              cy={center}
-              r={gasketMeanRadius}
-              fill="none"
-              stroke="rgba(14, 165, 233, 0.6)"
-              strokeDasharray="5 4"
-              strokeWidth={1.2}
-            />
-          ) : null}
-          <circle
-            cx={center}
-            cy={center}
-            r={boltCircleRadius}
-            fill="none"
-            stroke="rgba(148, 163, 184, 0.5)"
-            strokeWidth={1}
-          />
-          {boltPoints.map((point, index) => (
-            <circle
-              key={index}
-              cx={center + point.x * scale}
-              cy={center + point.y * scale}
-              r={boltRadius}
-              fill="rgba(15, 23, 42, 0.9)"
-              stroke="rgba(148, 163, 184, 0.8)"
-              strokeWidth={1}
-            />
-          ))}
-          <text
-            x={center}
-            y={center}
-            textAnchor="middle"
-            dominantBaseline="middle"
-            fontSize="16"
-            fill="rgba(226, 232, 240, 0.9)"
-            fontWeight="600"
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(11rem,14rem)] lg:items-start">
+        <div className="min-w-0">
+          <svg
+            className="mx-auto block h-auto w-full max-w-md"
+            viewBox={`0 0 ${VIEW} ${VIEW}`}
+            role="img"
+            aria-label={`Blind flange plan view DN ${dn}, outer diameter ${dims.D} mm, bolt circle ${dims.k} mm`}
           >
-            DN{dn}
-          </text>
-          {showUnknownGasket ? (
-            <text x={center} y={center + 22} textAnchor="middle" fontSize="10" fill="rgba(148, 163, 184, 0.8)">
-              Gasket: unknown
+            <title>
+              {`Plan view DN ${dn}: D ${dims.D} mm, K ${dims.k} mm, ${dims.bolts} × ${dims.size}`}
+            </title>
+            <rect x={1} y={1} width={VIEW - 2} height={VIEW - 2} rx={20} fill="#020617" stroke="rgba(148, 163, 184, 0.35)" />
+
+            <circle
+              cx={CENTER}
+              cy={CENTER}
+              r={outerRadius}
+              fill="rgba(134, 239, 172, 0.12)"
+              stroke={STROKE.outer}
+              strokeWidth={2.5}
+            />
+
+            {gasketOuterRadius ? (
+              <circle
+                cx={CENTER}
+                cy={CENTER}
+                r={gasketOuterRadius}
+                fill="rgba(125, 211, 252, 0.08)"
+                stroke={STROKE.gasket}
+                strokeDasharray="7 5"
+                strokeWidth={2}
+              />
+            ) : null}
+            {gasketInnerRadius ? (
+              <circle
+                cx={CENTER}
+                cy={CENTER}
+                r={gasketInnerRadius}
+                fill="none"
+                stroke={STROKE.gasket}
+                strokeDasharray="3 4"
+                strokeWidth={1.6}
+              />
+            ) : null}
+            {!gasketOuterRadius && !gasketInnerRadius && gasketMeanRadius ? (
+              <circle
+                cx={CENTER}
+                cy={CENTER}
+                r={gasketMeanRadius}
+                fill="none"
+                stroke={STROKE.gasket}
+                strokeDasharray="7 5"
+                strokeWidth={2}
+              />
+            ) : null}
+
+            <circle
+              cx={CENTER}
+              cy={CENTER}
+              r={boltCircleRadius}
+              fill="none"
+              stroke={STROKE.boltCircle}
+              strokeDasharray="2 4"
+              strokeWidth={2}
+            />
+
+            {boltPoints.map((point, index) => (
+              <circle
+                key={index}
+                cx={CENTER + point.x * scale}
+                cy={CENTER + point.y * scale}
+                r={boltRadius}
+                fill="#0f172a"
+                stroke={STROKE.hole}
+                strokeWidth={1.6}
+              />
+            ))}
+
+            <DimensionLine y={CENTER + outerRadius + 18} halfLength={outerRadius} label={`D ${dims.D}`} />
+            <DimensionLine y={CENTER - boltCircleRadius - 14} halfLength={boltCircleRadius} label={`K ${dims.k}`} />
+
+            <text
+              x={CENTER}
+              y={CENTER + 4}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fontSize="15"
+              fill="#f8fafc"
+              fontWeight="700"
+            >
+              DN{dn}
             </text>
-          ) : null}
-        </svg>
+            {showUnknownGasket ? (
+              <text x={CENTER} y={CENTER + 22} textAnchor="middle" fontSize="10" fill={STROKE.dim}>
+                Gasket: unknown
+              </text>
+            ) : null}
+          </svg>
+        </div>
+
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Thickness (side)</p>
+          <svg
+            className="mt-3 h-auto w-full"
+            viewBox={`0 0 ${sideWidth + 24} ${sideThickness + 48}`}
+            role="img"
+            aria-label={
+              thicknessMm > 0
+                ? `Side view thickness ${thicknessMm} mm`
+                : 'Side view thickness not available'
+            }
+          >
+            <rect
+              x={(sideWidth + 24 - sideOd) / 2}
+              y={28}
+              width={sideOd}
+              height={sideThickness}
+              rx={2}
+              fill="rgba(203, 213, 225, 0.18)"
+              stroke={STROKE.plate}
+              strokeWidth={2}
+            />
+            <text
+              x={(sideWidth + 24) / 2}
+              y={18}
+              textAnchor="middle"
+              fontSize="11"
+              fill={STROKE.dim}
+              fontWeight="600"
+            >
+              {thicknessMm > 0 ? `t ${thicknessMm} mm` : 't —'}
+            </text>
+            <text
+              x={(sideWidth + 24) / 2}
+              y={sideThickness + 42}
+              textAnchor="middle"
+              fontSize="10"
+              fill={STROKE.dim}
+            >
+              OD {dims.D} mm
+            </text>
+          </svg>
+          <p className="mt-2 text-[11px] leading-relaxed text-slate-500">
+            Side view is schematic (thickness exaggerated for readability). Use the plan view for bolt pattern.
+          </p>
+        </div>
       </div>
-      <div className="mt-4 grid gap-2 text-xs text-slate-400 md:grid-cols-3">
-        <div className="flex items-center gap-2">
-          <Ruler size={14} className="text-slate-500" />
-          <span>Outer D: {dims.D} mm</span>
+
+      <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4" aria-label="Sketch legend">
+        <LegendSwatch stroke={STROKE.outer} label="Outer flange" />
+        <LegendSwatch stroke={STROKE.gasket} dash="7 5" label="Gasket envelope" />
+        <LegendSwatch stroke={STROKE.boltCircle} dash="2 4" label="Bolt circle" />
+        <LegendSwatch stroke={STROKE.hole} label="Bolt holes" />
+      </div>
+
+      <div className="mt-4 grid gap-2 text-xs text-slate-300 sm:grid-cols-3">
+        <div>
+          <span className="text-slate-500">Outer D</span>
+          <p className="font-semibold text-slate-100">{dims.D} mm</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Ruler size={14} className="text-slate-500" />
-          <span>Bolt circle: {dims.k} mm</span>
+        <div>
+          <span className="text-slate-500">Bolt circle K</span>
+          <p className="font-semibold text-slate-100">{dims.k} mm</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Ruler size={14} className="text-slate-500" />
-          <span>Rec. thickness: {recommendedThickness ?? '-'} mm</span>
+        <div>
+          <span className="text-slate-500">Rec. plate thickness</span>
+          <p className="font-semibold text-slate-100">{recommendedThickness ?? '—'} mm</p>
         </div>
       </div>
     </div>
