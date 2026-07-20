@@ -1,3 +1,4 @@
+import {useEffect} from 'react';
 import {Layers} from 'lucide-react';
 import CalculationHelpDialog from './components/CalculationHelpDialog';
 import En1092StandardsDialog from './components/En1092StandardsDialog';
@@ -10,9 +11,22 @@ import PnSelectionSummary from './components/PnSelectionSummary';
 import MobileResultsBar from './components/MobileResultsBar';
 import {AVAILABLE_DNS, MATERIALS} from './domain/standards/data';
 import {MAX_STANDARD_PN, useBlindFlangeCalculatorState} from './state/useBlindFlangeCalculatorState';
+import {initShareLink, reportShareState} from './shareLink';
 
 export default function BlindFlangeCalculator() {
   const state = useBlindFlangeCalculatorState();
+
+  // Share-link protocol: restore a shared configuration through the regular
+  // import path (validated by migrateConfig) and stream the current
+  // configuration for the shell's "Copy link" button.
+  const {handleImportConfiguration, configurationFile} = state;
+  useEffect(() => {
+    initShareLink(handleImportConfiguration);
+  }, [handleImportConfiguration]);
+
+  useEffect(() => {
+    reportShareState(configurationFile);
+  }, [configurationFile]);
   const exportResult = state.exportResult;
   const boltPass =
     exportResult?.boltingSummary === undefined ? null : Boolean(exportResult.boltingSummary.pass);
