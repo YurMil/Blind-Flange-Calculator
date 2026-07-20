@@ -101,6 +101,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: quality
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Serialize publishes so concurrent main builds do not race each other.
+    concurrency:
+      group: deploy-blind-flange-calculator-website
+      cancel-in-progress: false
 
     steps:
       - name: Download static app artifact
@@ -110,15 +114,71 @@ jobs:
           path: deploy/blind-flange-calculator
 
       - name: Publish static app to website repository
-        uses: cpina/github-action-push-to-another-repository@main
         env:
           API_TOKEN_GITHUB: ${{ secrets.DEPLOY_TOKEN }}
-        with:
-          source-directory: deploy/blind-flange-calculator
-          destination-github-username: Biosxxx
-          destination-repository-name: cadautoscript.com
-          target-directory: static/utility-apps/blind-flange-calculator
-          target-branch: main
-          user-email: bot@biosxxx.com
-          user-name: blind-flange-deploy-bot
-          commit-message: Deploy blind flange calculator from ${{ github.repository }}@${{ github.sha }}
+          DEST_OWNER: Biosxxx
+          DEST_REPO: cadautoscript.com
+          TARGET_DIR: static/utility-apps/blind-flange-calculator
+          TARGET_BRANCH: main
+          GIT_USER_NAME: blind-flange-deploy-bot
+          GIT_USER_EMAIL: bot@biosxxx.com
+          COMMIT_MESSAGE: Deploy blind flange calculator from ${{ github.repository }}@${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ -z "${API_TOKEN_GITHUB:-}" ]; then
+            echo "DEPLOY_TOKEN secret is missing" >&2
+            exit 1
+          fi
+
+          SOURCE_DIR="$GITHUB_WORKSPACE/deploy/blind-flange-calculator"
+          WORK_DIR="$RUNNER_TEMP/website-repo"
+          DEST_URL="https://x-access-token:${API_TOKEN_GITHUB}@github.com/${DEST_OWNER}/${DEST_REPO}.git"
+
+          test -f "${SOURCE_DIR}/app.html"
+          test -f "${SOURCE_DIR}/manifest.json"
+          test -d "${SOURCE_DIR}/assets"
+
+          rm -rf "${WORK_DIR}"
+          git clone --depth 20 --branch "${TARGET_BRANCH}" "${DEST_URL}" "${WORK_DIR}"
+          cd "${WORK_DIR}"
+
+          git config user.name "${GIT_USER_NAME}"
+          git config user.email "${GIT_USER_EMAIL}"
+
+          mkdir -p "${TARGET_DIR}"
+          # Mirror the built app into the website path (delete stale hashed assets).
+          rsync -a --delete \
+            --exclude '.git' \
+            "${SOURCE_DIR}/" \
+            "${TARGET_DIR}/"
+
+          if git diff --quiet && git diff --cached --quiet; then
+            echo "No website changes to publish."
+            exit 0
+          fi
+
+          git add -- "${TARGET_DIR}"
+          git commit -m "${COMMIT_MESSAGE}"
+
+          # Other utility deploys may land on the same website main between clone and push.
+          max_attempts=5
+          attempt=1
+          while true; do
+            if git push origin "HEAD:${TARGET_BRANCH}"; then
+              echo "Published to ${DEST_OWNER}/${DEST_REPO}@${TARGET_BRANCH}:${TARGET_DIR}"
+              exit 0
+            fi
+
+            if [ "${attempt}" -ge "${max_attempts}" ]; then
+              echo "Push failed after ${max_attempts} attempts (non-fast-forward race)." >&2
+              exit 1
+            fi
+
+            echo "Push rejected; rebasing onto origin/${TARGET_BRANCH} (attempt ${attempt}/${max_attempts})..."
+            git fetch origin "${TARGET_BRANCH}"
+            git rebase "origin/${TARGET_BRANCH}"
+            attempt=$((attempt + 1))
+            sleep $((attempt * 2))
+          done
